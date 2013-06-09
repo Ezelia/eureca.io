@@ -1,79 +1,348 @@
 <!DOCTYPE html>
 <html>
+<head>
+<title>eureca.io</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Bootstrap -->
+<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Eureca.io : eureca.io" />
+<link href="css/darkstrap-v0.9.0.css" rel="stylesheet" media="screen">
+<link href="css/prettify.css" rel="stylesheet" />
+<style>
+#content {
+  margin-top: 50px; }
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+form.well,
+.shift-up {
+  margin-top: -19px; }
 
-    <title>Eureca.io</title>
-  </head>
+.span6 > .well {
+  margin-top: -19px; }
 
-  <body>
+.ds-margin-top, h2 {
+  margin-top: 50px; }
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/Ezelia/eureca.io">View on GitHub</a>
+.popovers .popover {
+  display: block;
+  float: left;
+  margin: 20px;
+  position: relative;
+  width: 260px;
+}
 
-          <h1 id="project_title">Eureca.io</h1>
-          <h2 id="project_tagline">eureca.io</h2>
+</style>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/Ezelia/eureca.io/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/Ezelia/eureca.io/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
+</head>
+<body data-spy="scroll" data-target=".navbar">
+    <a id="anchor-prez"></a><br />
+
+    <div class="container" id="content">
+
+
+    <div class="hero-unit">
+      <h1>eureca.io</h1>
+      <p>Author <a href="https://github.com/alaa-eddine">Alaa-eddine K.</a></p>
+      <p>a nodejs bidirectional RPC using engine.io or sockjs as transport layer</p>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+    <div class='page-header'>
+      <h1>Usage</h1>
+	  <h2>Base example</h2>
+	  <p>
+		here we setup a server that expose hello() function.<br />
+		we can call this function from a browser client or nodejs client.
+	  </p>	  
+    </div>
+	
+    <div class="row">
+      <div class="span6">
+		<h3 class="well">Server side</h3>
+		<div class="well">		
+		<h4 class="label label-success"> express server </h4>
+<pre class="prettyprint linenums language-javascript">
+var express = require('express')
+  , app = express(app)
+  , server = require('http').createServer(app);
+var EurecaServer = require('eureca.io').EurecaServer;
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+var eurecaServer = new EurecaServer();
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+eurecaServer.attach(server);
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+//functions under "exports" namespace will be exposed to client side
+eurecaServer.exports.hello = function () {
+    console.log('Hello from client');
+}
+//------------------------------------------
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+//see browser client side code for index.html content
+app.get('/', function (req, res, next) {
+    res.sendfile('index.html');
+});
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+server.listen(8000);
+</pre>		
+		</div>
+      </div>
+      <div class="span6">
+	  <h3 class="well">Client side</h3>
+		<div class="well">
+		
+		
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#bclient1" data-toggle="tab">Browser client</a></li>
+            <li><a href="#nclient1" data-toggle="tab">Nodejs client</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="bclient1">
+<pre class="prettyprint linenums language-html">
+&lt;!doctype html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Engine.io test&lt;/title&gt;
+        &lt;script src=&quot;/eureca.js&quot;&gt;&lt;/script&gt;
+    &lt;/head&gt;
+    &lt;body&gt;    
+        &lt;script&gt;
+            var client = new Eureca.EurecaClient();
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+            client.ready(function (proxy) {
+                proxy.hello();
+            });
+        &lt;/script&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre>	
+            </div>
+            <div class="tab-pane" id="nclient1">
+<pre class="prettyprint linenums language-javascript">
+var EurecaClient = require('../../').EurecaClient;
+var client = new EurecaClient({ uri: 'http://localhost:8000/' });
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+client.ready(function (proxy) {
+    proxy.hello();
+});
+</pre>	
+            </div>
+          </div>
+		  			  
+		</div>
+      </div>
+    </div>	
+	
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
+    <div class='page-header'>
+	  <h2>Calling server side functions from client and getting back result</h2>
     </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Eureca.io maintained by <a href="https://github.com/Ezelia">Ezelia</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
+    <div class="row">
+      <div class="span6">
+		<h3 class="well">Server side</h3>
+		<div class="well">		
+<pre class="prettyprint linenums language-javascript">
+// ... server initialisation
+eurecaServer.exports.add = function (a, b) {
+    return a+b
+}
+
+//... other stuff
+</pre>		
+		</div>
+      </div>
+      <div class="span6">
+	  <h3 class="well">Client side</h3>
+		<div class="well">
+		
+<pre class="prettyprint linenums language-javascript">
+client.ready(function (proxy) {
+    proxy.add(10, 5).onReady(function(result) {
+		console.log('got result from server, 10+5=', result);
+	});
+});
+</pre>		
+
+		</div>
+      </div>
+    </div>
+	
+
+    <div class='page-header'>
+	  <h2>Calling client side functions from server and getting back result</h2>
+	  <p>
+	  in this example, client will call ping() function on the server, then the server
+	  well call pong() function on the client side<br />
+	  
+	  <span class="label label-warning">important</span>
+	  <b> client side functions need to be allowed first in the server side when creating the server object</b>
+	  </p>
     </div>
 
-    
+    <div class="row">
+      <div class="span6">
+		<h3 class="well">Server side</h3>
+		<div class="well">		
+<pre class="prettyprint linenums language-javascript">
+//we need to allow bar() function first
+var eurecaServer = new EurecaServer({allow:['bar']});
 
-  </body>
+// ... server initialisation
+eurecaServer.exports.foo = function () {
+    var conn = this.connection;
+    var client = eurecaServer.getClient(conn.id);
+    console.log('called foo()');
+    client.bar();
+}
+
+//... other stuff
+</pre>		
+		</div>
+      </div>
+      <div class="span6">
+	  <h3 class="well">Client side</h3>
+		<div class="well">
+		
+<pre class="prettyprint linenums language-javascript">
+client.exports.bar = function ()
+{
+    console.log('called bar()');
+}
+
+client.ready(function (proxy) {
+    proxy.foo();
+});
+</pre>		
+
+		</div>
+      </div>
+    </div>
+	
+    <div class='page-header'>
+	  <h2>Namespaces</h2>
+	  <p>
+	  we can expose functions under namespaces if we want to organise them for example
+	  </p>
+    </div>
+    <div class="row">
+      <div class="span6">
+		<h3 class="well">Server side</h3>
+		<div class="well">		
+<pre class="prettyprint linenums language-javascript">
+// ... server initialisation
+eurecaServer.exports.math = {
+	add = function (a, b) {
+		return a+b
+	},	
+	sub = function (a, b) {
+		return a-b
+	}
+}
+
+//... other stuff
+</pre>		
+		</div>
+      </div>
+      <div class="span6">
+	  <h3 class="well">Client side</h3>
+		<div class="well">
+		
+<pre class="prettyprint linenums language-javascript">
+client.ready(function (proxy) {
+	proxy.math.add(10, 5).onReady(function(result) {
+		console.log('got result from server, 10+5=', result);
+	});
+
+	proxy.math.sub(10, 5).onReady(function(result) {
+		console.log('got result from server, 10-5=', result);
+	});
+	
+});
+</pre>		
+
+		</div>
+      </div>
+    </div>
+	
+	
+
+    <div class='page-header'>
+	  <h2>TODO</h2>
+	  <p>This documentation is not complete, will be updated with more examples</p>
+    </div>	
+	
+  </div> <!-- /container -->
+  
+  
+  
+  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <script src="js/prettify.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function() {
+	/*
+		$("pre.language-javascript").snippet("javascript", {style:"pablo"});
+		$("pre.language-html").snippet("html", {style:"pablo"});
+		$('pre.prettyprint').css({'overflow':'auto', 'padding':'0px', 'padding-top':'20px'});
+		$('.linenums li').each(function(i){
+			var text = $(this).html();
+			$(this).html(text.replace(/\s/g, '&nbsp;'));
+			$(this).html(text.replace(/\t/g, '&nbsp;&nbsp;&nbsp;'));
+			$(this).css({'white-space':'nowrap', 'padding-left':'0px'})
+		});			
+	*/
+		/* syntax highlight */
+		
+		prettyPrint();	  
+		$('.linenums li span').each(function(i){
+			var text = $(this).html();
+			text = text.replace(/\s/g, '&nbsp;');
+			text.replace(/\t/g, '&nbsp;&nbsp;&nbsp;');
+			
+			$(this).html(text);
+			$(this).css({'white-space':'nowrap'});
+		});	
+		
+		/*************************/
+		
+		/* tabs 
+		$('.ctabs a').click(function (e) {
+		e.preventDefault();
+		$(this).tab('show');
+		})
+		/*************************/
+		
+
+      $("#style-toggle").click(function (e) {
+        e.preventDefault();
+
+        // Toggle <link> url
+        $link = $("link#darkstrap-link");
+        var href = $link.attr("href")
+        var css_url = 
+          href.length > 0 ?  "" : "css/darkstrap.css"
+        $link.attr("href", css_url);
+
+        // Toggle button text
+        $this = $(this);
+        var text = $this.text() == "Toggle Darkstrap" ?
+          "Toggle Bootstrap" : "Toggle Darkstrap";
+        $this.text(text);
+      });
+    });
+  </script>
+
+  <script type="text/javascript">
+    $(function () {
+      $("#tooltip-example").tooltip();
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(function () {
+      $("#myCarousel").carousel();
+    });
+  </script>
+</body>
 </html>
