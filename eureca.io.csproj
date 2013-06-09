@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{46CD7BA7-9372-48D1-A014-E97222222717}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UpgradeBackupLocation />
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>eureca.io</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>24463</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:24450/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptIncludeComments>true</TypeScriptIncludeComments>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptIncludeComments>false</TypeScriptIncludeComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="build\EurecaClient.js" />
+    <CodeAnalysisDictionary Include="src\EObject.class.ts" />
+    <Content Include="build\EurecaServer.js" />
+    <Content Include="build\js\engine.io.js" />
+    <Content Include="build\js\socket.io.js" />
+    <Content Include="build\js\sockjs-0.3.min.js" />
+    <TypeScriptCompile Include="src\transport\Sockjs.transport.ts" />
+    <Content Include="examples\1-websocket-only\client.js" />
+    <Content Include="examples\1-websocket-only\server.js" />
+    <Content Include="examples\1-http-server\server.js" />
+    <Content Include="examples\2-express-server\client.js" />
+    <Content Include="examples\2-express-server\index.html" />
+    <Content Include="examples\3-express-server-with-sockjs-transport\client.js" />
+    <Content Include="examples\3-express-server-with-sockjs-transport\index.html" />
+    <Content Include="examples\3-express-server-with-sockjs-transport\server.js" />
+    <Content Include="examples\99-bidirectional-calls\client.js" />
+    <Content Include="examples\99-bidirectional-calls\index.html" />
+    <Content Include="examples\99-bidirectional-calls\server.js" />
+    <Content Include="src\transport\Sockjs.transport.js">
+      <DependentUpon>Sockjs.transport.ts</DependentUpon>
+    </Content>
+    <Content Include="src\transport\Sockjs.transport.min.js">
+      <DependentUpon>Sockjs.transport.ts</DependentUpon>
+    </Content>
+    <Content Include="tests\spec\index.html" />
+    <Content Include="tests\spec\test1.spec.js" />
+    <TypeScriptCompile Include="src\Stub.ts" />
+    <TypeScriptCompile Include="src\Util.class.ts" />
+    <Content Include="src\Client.class.js">
+      <DependentUpon>Client.class.ts</DependentUpon>
+    </Content>
+    <Content Include="src\Client.class.min.js">
+      <DependentUpon>Client.class.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="src\ISocket.interface.ts" />
+    <TypeScriptCompile Include="src\IServer.interface.ts" />
+    <TypeScriptCompile Include="src\Transport.ts" />
+    <Content Include="src\file1.js">
+      <DependentUpon>Transport.ts</DependentUpon>
+    </Content>
+    <Content Include="src\Server.class.js">
+      <DependentUpon>Server.class.ts</DependentUpon>
+    </Content>
+    <Content Include="src\Server.class.min.js">
+      <DependentUpon>Server.class.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="src\transport\EngineIO.transport.ts" />
+    <Content Include="src\Stub.js">
+      <DependentUpon>Stub.ts</DependentUpon>
+    </Content>
+    <Content Include="src\Stub.min.js">
+      <DependentUpon>Stub.ts</DependentUpon>
+    </Content>
+    <Content Include="src\Transport.js">
+      <DependentUpon>Transport.ts</DependentUpon>
+    </Content>
+    <Content Include="src\Transport.min.js">
+      <DependentUpon>Transport.ts</DependentUpon>
+    </Content>
+    <Content Include="src\transport\EngineIO.transport.js">
+      <DependentUpon>EngineIO.transport.ts</DependentUpon>
+    </Content>
+    <Content Include="src\transport\EngineIO.transport.min.js">
+      <DependentUpon>EngineIO.transport.ts</DependentUpon>
+    </Content>
+    <Content Include="src\Util.class.js">
+      <DependentUpon>Util.class.ts</DependentUpon>
+    </Content>
+    <Content Include="src\Util.class.min.js">
+      <DependentUpon>Util.class.ts</DependentUpon>
+    </Content>
+    <Content Include="examples\client1.js" />
+    <Content Include="examples\1-http-server\client.js" />
+    <Content Include="examples\1-http-server\index.html" />
+    <Content Include="examples\2-express-server\server.js" />
+    <Content Include="examples\public\EurecaClient.class.js" />
+    <Content Include="examples\server-http.js" />
+    <Content Include="examples\server-ws-only.js" />
+    <Content Include="examples\server.js" />
+    <Content Include="examples\server1.js" />
+    <Content Include="changelog.txt" />
+    <Content Include="src\Client.class.ts" />
+    <Content Include="src\Contract.class.ts" />
+    <Content Include="src\Server.class.ts" />
+    <Content Include="src\js\engine.io.js" />
+    <Content Include="index.js" />
+    <Content Include="src\js\socket.io.js" />
+    <Content Include="src\js\sockjs-0.3.min.js" />
+    <Content Include="examples\client.js" />
+    <Content Include="examples\index.html" />
+    <Content Include="examples\rmi.js" />
+    <Content Include="examples\rmiclient.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".npmignore" />
+    <Content Include="package.json" />
+    <Content Include="Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="src\transport\Sockjs.transport.js.map">
+      <DependentUpon>Sockjs.transport.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="src\Util.class.js.map">
+      <DependentUpon>Util.class.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="src\Server.class.js.map">
+      <DependentUpon>Server.class.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="src\Client.class.js.map">
+      <DependentUpon>Client.class.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="src\Transport.js.map">
+      <DependentUpon>Transport.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="src\transport\EngineIO.transport.js.map">
+      <DependentUpon>EngineIO.transport.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="src\Stub.js.map">
+      <DependentUpon>Stub.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>tsc --out  $(ProjectDir)lib\EurecaClient.js $(ProjectDir)src\Client.class.ts
+tsc --out  $(ProjectDir)lib\EurecaServer.js $(ProjectDir)src\Server.class.ts</PostBuildEvent>
+  </PropertyGroup>
+</Project>
