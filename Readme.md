@@ -3,6 +3,8 @@ eureca.io
 
 eureca (Easy Unobstructive REmote CAll) is a node.js bidirectional RPC library using engine.io or sockjs as a network layer.
 
+please visit the project web page for more code samples http://ezelia.github.io/eureca.io/
+
 Setup 
 ======
 ```
@@ -11,8 +13,8 @@ Setup
 
 Code examples 
 =============
-please check node_modules/eureca.io/examples/ for some example codes
 
+please check node_modules/eureca.io/examples/ for some example codes
 
 
 ### running 1-http-server example code
