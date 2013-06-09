@@ -30,11 +30,57 @@ form.well,
   position: relative;
   width: 260px;
 }
-
+.nav li span
+{
+display:block;
+padding:8px;
+}
+.right
+{
+	display:block;
+	float:right;
+}
 </style>
 
 </head>
 <body data-spy="scroll" data-target=".navbar">
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#top">eureca.io</a>
+			<div class="nav-collapse collapse">
+				<ul class="nav right">
+				<li>
+					<span>
+						<div class="fb-like" data-href="http://ezelia.github.io/eureca.io/" data-send="false" data-layout="button_count" data-width="450" data-show-faces="true"></div>					
+					</span>
+				</li>
+				<li>
+					<span>
+					<a href="http://twitter.com/share" class="twitter-share-button" data-url="http://ezelia.github.io/eureca.io/" data-count="horizontal" data-text="eureca.io : a nodejs bidirectional RPC using engine.io or sockjs as transport layer" data-via="Ezelia_" data-related="Ezelia_"></a>
+					</span>
+				</li>				
+				<li>
+					<span>
+						<div class="g-plusone" data-size="medium" data-href="http://ezelia.github.io/eureca.io/"></div>
+					</span>
+				</li>				
+				<li><span><iframe id="watch" src="http://ghbtns.com/github-btn.html?user=ezelia&repo=eureca.io&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe></span></li>
+				<li><span><iframe id="fork" src="http://ghbtns.com/github-btn.html?user=ezelia&repo=eureca.io&type=fork&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="95" height="20"></iframe></span></li>
+				</ul>
+			</div>
+        </div>
+      </div>
+    </div>
+
+
+
     <a id="anchor-prez"></a><br />
 
     <div class="container" id="content">
@@ -44,8 +90,17 @@ form.well,
       <h1>eureca.io</h1>
       <p>Author <a href="https://github.com/alaa-eddine">Alaa-eddine K.</a></p>
       <p>a nodejs bidirectional RPC using engine.io or sockjs as transport layer</p>
+	  <p>Project page <a href="https://github.com/Ezelia/eureca.io" target="_blank">https://github.com/Ezelia/eureca.io</a></p>
     </div>
-
+    <div class='page-header'>
+      <h1>Installation</h1>
+    </div>
+	
+<pre class="prettyprint linenums language-javascript">
+npm install eureca.io
+</pre>		
+	
+	<hr />
     <div class='page-header'>
       <h1>Usage</h1>
 	  <h2>Base example</h2>
@@ -344,5 +399,22 @@ client.ready(function (proxy) {
       $("#myCarousel").carousel();
     });
   </script>
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/fr_FR/all.js#xfbml=1&appId=258181120968938";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>  
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>  
+<script type="text/javascript">
+    (function() {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = 'https://apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+    })();
+</script>
 </body>
 </html>
