@@ -178,7 +178,7 @@ server.listen(8000);
             </div>
             <div class="tab-pane" id="nclient1">
 <pre class="prettyprint linenums language-javascript">
-var EurecaClient = require('../../').EurecaClient;
+var EurecaClient = require('eureca.io').EurecaClient;
 var client = new EurecaClient({ uri: 'http://localhost:8000/' });
 
 client.ready(function (proxy) {
@@ -217,6 +217,9 @@ eurecaServer.exports.add = function (a, b) {
 		
 <pre class="prettyprint linenums language-javascript">
 client.ready(function (proxy) {
+	//the onReady event is triggered when the remote side finishes
+	//executing the called function.
+	//returned value is stored in result argument
     proxy.add(10, 5).onReady(function(result) {
 		console.log('got result from server, 10+5=', result);
 	});
@@ -229,10 +232,10 @@ client.ready(function (proxy) {
 	
 
     <div class='page-header'>
-	  <h2>Calling client side functions from server and getting back result</h2>
+	  <h2>Calling client side functions from server and getting the result back</h2>
 	  <p>
-	  in this example, client will call ping() function on the server, then the server
-	  well call pong() function on the client side<br />
+	  in this example, client will call foo() function on the server, then the server
+	  will call bar() function on the client side<br />
 	  
 	  <span class="label label-warning">important</span>
 	  <b> client side functions need to be allowed first in the server side when creating the server object</b>
@@ -249,6 +252,10 @@ var eurecaServer = new EurecaServer({allow:['bar']});
 
 // ... server initialisation
 eurecaServer.exports.foo = function () {
+	//when a server side function is called
+	//we can access the client connection
+	//throught this.connection
+	
     var conn = this.connection;
     var client = eurecaServer.getClient(conn.id);
     console.log('called foo()');
@@ -324,8 +331,95 @@ client.ready(function (proxy) {
       </div>
     </div>
 	
-	
+	<hr />
+    
+	<h2>Events</h2>
+	<h3>Server side events</h3>
+    <p>EurecaServer exposes four events</p>
+	<ul>
+	<li><b>onConnect</b> triggered when a new client connects to the server.</li>
+	<li><b>onMessage</b> triggered each time a messages is sent from client to server, this can be useful to debug or watch how eureca.io works.</li>
+	<li><b>onDisconnect</b> triggered when a client disconnect.</li>
+	<li><b>onError</b> if something goes wrong with underlying connection this event will be triggered</li>
+	</ul>
+<pre class="prettyprint linenums language-javascript">
+var EurecaServer = require('eureca.io').EurecaServer;
+var eurecaServer = new EurecaServer();
 
+eurecaServer.onConnect(function (connection) {
+    
+    console.log('new Client', connection.id);
+    var client = eurecaServer.getClient(connection.id);
+    
+	//if we defined helloclient() function in the client side
+	//we can call it like this
+    client.helloclient();
+    
+});
+
+eurecaServer.onMessage(function (msg) {
+    console.log('RECV', msg);
+});
+
+
+eurecaServer.onDisconnect(function (connection) {    
+    console.log('client %s disconnected', connection.id);
+});
+
+eurecaServer.onError(function (e) {    
+    console.log('an error occured', e);
+});
+</pre>		
+	
+	<h3>Client side events</h3>
+    <p>EurecaClient exposes seven events</p>
+	<ul>
+	<li><b>ready</b> this is a special event, triggered one the client is ready to call server side functions.</li>
+	<li><b>onConnect</b> triggered when a the client successfully open a connection to the server.</li>
+	<li><b>onMessage</b> triggered each time a messages is received from the server</li>
+	<li><b>onDisconnect</b> triggered when the client lost connection. this will cause the client process to terminate.</li>
+	<li><b>onConnectionLost</b> when the client lost connection, it will try to reconnect to the server, this event indicate that a question is lost and that an attempt to reconnect will be triggered.</li>
+	<li><b>onConnectionRetry</b> triggered many times after "onConnectionLost" ... if the connection cannot be re-estabilished the client stop trying and triggers "onDisconnect" event.</li>
+	<li><b>onError</b> if something goes wrong with underlying connection this event will be triggered</li>
+	</ul>	
+<pre class="prettyprint linenums language-javascript">
+var EurecaClient = require('eureca.io').EurecaClient;
+var client = new EurecaClient({ uri: 'http://localhost:8000/' });
+
+//remote parameter contains the proxy able to call server side functions
+client.ready(function(remote) {
+	remote.helloServer();
+});
+
+client.onConnect(function (connection) {
+    console.log('Incomming connection', connection.id);
+});
+
+client.onMessage(function (data) {
+    console.log('Received data', data);
+});
+
+client.onError(function (e) {
+    console.log('error', e);
+});
+
+client.onConnectionLost(function () {
+    console.log('connection lost ... will try to reconnect');
+});
+
+client.onConnectionRetry(function (socket) {
+    console.log('retrying ...');
+
+});
+
+client.onDisconnect(function (socket) {
+    console.log('Client disconnected ', connection.id);
+
+});
+</pre>	
+	
+	
+	
     <div class='page-header'>
 	  <h2>TODO</h2>
 	  <p>This documentation is not complete, will be updated with more examples</p>
