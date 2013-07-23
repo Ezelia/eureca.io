@@ -1,5 +1,5 @@
 //this example is taken from passport-local login example.
-//engine.io stuff after expressjs configuration
+//eureca.io stuff after expressjs configuration
 //
 //
 var flash = require('connect-flash')
