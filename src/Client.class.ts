@@ -142,6 +142,7 @@ module Eureca {
                 }
             });
 
+
             client.ondisconnect(function (e) {
 
                 _this.trigger('onConnectionRetry');

@@ -25,7 +25,6 @@ module Eureca.Transports.EngineIO {
         }
         close()
         {
-            this.socket.userClose = true;
             this.socket.close();
         }
         onopen(callback: (any?) => void )

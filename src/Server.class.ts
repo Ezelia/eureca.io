@@ -128,7 +128,6 @@ module Eureca  {
                 _this.trigger('onConnect', socket);
 
 
-
                 socket.onmessage(function (message) {
                     _this.trigger('onMessage', message, socket);
 
