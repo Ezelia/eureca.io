@@ -43,6 +43,7 @@ module Eureca  {
         private transport: any;
         private stub: Stub;
         private scriptCache: string = '';
+
         // Constructor
         constructor(public settings?: any = {}) {
             super();
@@ -61,6 +62,10 @@ module Eureca  {
             this.allowedF = [];
 
             this.clients = {};
+
+
+            if (typeof this.settings.authenticate == 'function')
+                this.exports.authenticate = this.settings.authenticate;
 
             this.registerEvents(['onConnect', 'onDisconnect', 'onMessage', 'onError']);
 
@@ -125,7 +130,7 @@ module Eureca  {
 
 
                 socket.onmessage(function (message) {
-                    _this.trigger('onMessage', message);
+                    _this.trigger('onMessage', message, socket);
 
                     var jobj;
                     try {
@@ -135,7 +140,12 @@ module Eureca  {
                     if (jobj === undefined) return;
                     if (jobj.f !== undefined) {
                         var context: any = { user: { clientId: socket.id }, connection: socket };
-                        _this.stub.invoke(context, _this, jobj, socket);
+
+
+                        if (!_this.settings.preInvoke || jobj.f == 'authenticate' || (typeof _this.settings.preInvoke == 'function' && _this.settings.preInvoke.apply(context)))
+                            _this.stub.invoke(context, _this, jobj, socket);
+
+
                         return;
                     }
 
@@ -147,7 +157,7 @@ module Eureca  {
                 });
 
                 socket.onerror(function (e) {
-                    _this.trigger('onError', e);
+                    _this.trigger('onError', e, socket);
                 });
 
 

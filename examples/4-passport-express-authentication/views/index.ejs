@@ -1,0 +1,29 @@
+<% if (!user) { %>
+	<h2>Welcome! Please log in.</h2>
+<% } else { %>
+	<h2>Hello, <%= user.username %>.</h2>
+	<input type="hidden" id="eiohash" value="<%= eio.hash %>" />
+	<script src="/eureca.js"></script>
+        <script>
+
+			var authToken = document.getElementById('eiohash').value;
+            var client = new Eureca.Client({
+				transport: 'engine.io',
+				authenticate : function(proxy, next) {
+					console.log('calling server authenticate ');
+					proxy.authenticate(authToken).onReady(function(r) {
+						console.log('got result', r);
+						if (r) next();
+					})
+				}
+			});
+			
+			
+            client.ready(function (server) {
+				console.log('can call hello');
+
+				//if authentication fails, will not call hello();
+				server.hello();
+            });
+        </script>
+<% } %>

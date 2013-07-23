@@ -42,9 +42,10 @@ module Eureca {
         public exports: any;
         public socket: any;
         public contract: string[];
+        
         private stub: Stub;
         private transport: any;
-
+        
         // Constructor
         constructor(public settings?: any = {}) {
             super();
@@ -93,9 +94,9 @@ module Eureca {
             _this.socket = client;
 
 
-            client.onopen(function () {
+            client.onopen(function () {                
                 _this.trigger('onConnect', client);
-                _this.tries = 0;
+                _this.tries = 0;                
             });
 
 
@@ -113,8 +114,16 @@ module Eureca {
                 {
                     _this.contract = jobj.__eureca__;
                     _this.stub.importRemoteFunction(_this, _this.socket, jobj.__eureca__);
-                    _this._ready = true;
-                    _this.trigger('ready', _this);
+
+
+                    var next = function () {
+                        _this._ready = true;
+                        _this.trigger('ready', _this);
+                    }
+
+                    if (_this.settings.authenticate) _this.settings.authenticate(_this, next);
+                    else next();
+
                     return;
                 }
 
@@ -134,6 +143,7 @@ module Eureca {
             });
 
             client.ondisconnect(function (e) {
+
                 _this.trigger('onConnectionRetry');
                 _this.tries++;
                 if (_this.tries > _this.maxRetries) //handle 1002 and 1006 sockjs error codes

@@ -74,6 +74,7 @@
     <Content Include="examples\3-express-server-with-sockjs-transport\client.js" />
     <Content Include="examples\3-express-server-with-sockjs-transport\index.html" />
     <Content Include="examples\3-express-server-with-sockjs-transport\server.js" />
+    <Content Include="examples\4-passport-express-authentication\server.js" />
     <Content Include="examples\99-bidirectional-calls\client.js" />
     <Content Include="examples\99-bidirectional-calls\index.html" />
     <Content Include="examples\99-bidirectional-calls\server.js" />
@@ -139,7 +140,6 @@
     <Content Include="examples\server-ws-only.js" />
     <Content Include="examples\server.js" />
     <Content Include="examples\server1.js" />
-    <Content Include="changelog.txt" />
     <Content Include="src\Client.class.ts" />
     <Content Include="src\Contract.class.ts" />
     <Content Include="src\Server.class.ts" />
@@ -153,7 +153,6 @@
     <Content Include="examples\rmiclient.html" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include=".npmignore" />
     <Content Include="package.json" />
     <Content Include="Readme.md" />
   </ItemGroup>
@@ -192,7 +191,12 @@
       <DependentUpon>Stub.ts</DependentUpon>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="examples\4-passport-express-authentication\views\account.ejs" />
+    <Content Include="examples\4-passport-express-authentication\views\index.ejs" />
+    <Content Include="examples\4-passport-express-authentication\views\layout.ejs" />
+    <Content Include="examples\4-passport-express-authentication\views\login.ejs" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" />
   <PropertyGroup>
     <PostBuildEvent>tsc --out  $(ProjectDir)lib\EurecaClient.js $(ProjectDir)src\Client.class.ts
