@@ -114,7 +114,7 @@ module Eureca  {
             //ioServer.on('connection', function (socket) {
             ioServer.onconnect(function (socket) {
                 socket.eureca = {};
-
+                socket.siggg = 'A';
                 
                 socket.eureca.remoteAddress = socket.remoteAddress;
 
@@ -240,6 +240,24 @@ module Eureca  {
                     }
                 });
             }
+
+            //Workaround : nodejs 0.10.0 have a strange behaviour making remoteAddress unavailable when connecting from a nodejs client
+            server.on('request', function (req, res) {                
+                var id = req.query.sid;
+                var client = _this.clients[req.query.sid];
+                
+                if (client)
+                {                    
+                    client.eureca = client.eureca || {};                    
+                    client.eureca.remoteAddress = client.eureca.remoteAddress || req.socket.remoteAddress;
+                    client.eureca.remotePort = client.eureca.remotePort || req.socket.remotePort;                    
+                }
+                //req.eureca = {
+                //    remoteAddress: req.socket.remoteAddress,
+                //    remotePort: req.socket.remotePort
+                //}
+                
+            });
             
         }
     }
