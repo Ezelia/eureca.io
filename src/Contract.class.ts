@@ -74,6 +74,7 @@ module Eureca {
                 }
                 else
                 {
+                    //FIXME : will crash if sub NS has no children : example : exports.id = 'hello'
                     parseNS(target[prop], ns, parent + prop + '.');
                 }
                 //contract.push(prop);

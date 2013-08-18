@@ -138,7 +138,7 @@ module Eureca  {
 
                     if (jobj === undefined) return;
                     if (jobj.f !== undefined) {
-                        var context: any = { user: { clientId: socket.id }, connection: socket };
+                        var context: any = { user: { clientId: socket.id }, connection: socket, async:false, retId: jobj._r, 'return': function (result) { this.connection.send(JSON.stringify({ _r: this.retId, r: result })); } };
 
 
                         if (!_this.settings.preInvoke || jobj.f == 'authenticate' || (typeof _this.settings.preInvoke == 'function' && _this.settings.preInvoke.apply(context)))

@@ -24,7 +24,9 @@ module Eureca {
             if (proxyObj !== undefined) proxyObj.callback(result);
         }
 
-        importRemoteFunction(handle, socket, functions) {   
+        importRemoteFunction(handle, socket, functions) {
+            //TODO : improve this using cache
+
             var _this = this;
             if (functions === undefined) return;
             for (var i = 0; i < functions.length; i++) {
@@ -38,8 +40,12 @@ module Eureca {
                     }
                     var _fname = ftokens[ftokens.length - 1];
                     /* end namespace parsing */
+
+                    //TODO : do we need to re generate proxy function if it's already declared ?
                     proxy[_fname] = function () {
+                        //TODO : register signature ID to be able to trigger result later.
                         var proxyObj = {
+                            /* TODO : save uid/sig here*/
                             callback: function () { },
                             onReady: function (fn)
                             {
@@ -129,7 +135,7 @@ module Eureca {
                 var result = func.apply(context, obj.a);
 
                 //console.log('sending back result ', result, obj)
-                if (socket && obj._r) socket.send(JSON.stringify({ _r: obj._r, r: result }));
+                if (socket && obj._r && !context.async) socket.send(JSON.stringify({ _r: obj._r, r: result }));
 
                 obj.a.unshift(socket);
                 if (typeof func.onCall == 'function') func.onCall.apply(context, obj.a);
