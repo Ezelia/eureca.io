@@ -7,9 +7,8 @@ please visit the project web page for more code samples http://eureca.io/
 
 Setup 
 ======
-```
-    npm install eureca.io
-```
+[![NPM](https://nodei.co/npm/eureca.io.png)](https://npmjs.org/package/eureca.io)
+
 
 Code examples 
 =============
