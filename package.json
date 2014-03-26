@@ -1,7 +1,7 @@
 {
   "name": "eureca.io",
   "description": "Nodejs remote procedure call built on top of engine.io",
-  "version": "0.5.1",
+  "version": "0.5.11",
   "author": {
     "name": "Alaa-eddine KADDOURI"
   },
