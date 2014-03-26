@@ -1,7 +1,7 @@
 {
   "name": "eureca.io",
   "description": "Nodejs remote procedure call built on top of engine.io",
-  "version": "0.5.01",
+  "version": "0.5.1",
   "author": {
     "name": "Alaa-eddine KADDOURI"
   },
@@ -22,8 +22,8 @@
     "url": "https://github.com/Ezelia/eureca.io"
   },
   "dependencies": {
-	"engine.io": ">= 0.6.0",
-	"engine.io-client": ">= 0.6.0",
+	"engine.io": ">= 1.0.0",
+	"engine.io-client": ">= 1.0.0",
     "sockjs": ">= 0.3.0",
     "sockjs-client": ">= 0.1.3"
   },
