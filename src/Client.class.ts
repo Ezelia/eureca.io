@@ -1,5 +1,4 @@
-/// <reference path="transport/Sockjs.transport.ts" />
-/// <reference path="transport/EngineIO.transport.ts" />
+/// <reference path="transport/Primus.transport.ts" />
 /// <reference path="Stub.ts" />
 /// <reference path="EObject.class.ts" />
 /// <reference path="Util.class.ts" />
@@ -32,7 +31,7 @@ module Eureca {
     export class Client extends EObject {
 
 
-        private _ready: bool;
+        private _ready: boolean;
 
 
         public maxRetries: number;
@@ -47,12 +46,14 @@ module Eureca {
         private transport: any;
         
         // Constructor
-        constructor(public settings?: any = {}) {
+        constructor(public settings: any = {}) {
             super();
             this.stub = new Stub(settings);
 
-            settings.transport = settings.transport || 'engine.io';
-            console.log('* using ' + settings.transport);
+
+            settings.transformer = settings.transport || 'engine.io';
+            settings.transport = 'primus';
+            console.log('* using primus:' + settings.transformer);
             this.transport = Transport.get(settings.transport);
 
             var _this = this;
@@ -80,6 +81,7 @@ module Eureca {
             this.socket.close();
         }
         connect() {
+            
             var _this = this;
             var prefix = '';
             prefix += this.settings.prefix || _eureca_prefix;
@@ -89,8 +91,11 @@ module Eureca {
 
             console.log(uri, prefix);
             _this._ready = false;
+            var _transformer = this.settings.transformer;
+            var _parser = this.settings.parser;
+
             //_this.socket = EurecaSocket(uri, { path: prefix });
-            var client = this.transport.createClient(uri, { prefix: prefix });
+            var client = this.transport.createClient(uri, { prefix: prefix, transformer: _transformer, parser: _parser, retries: this.maxRetries, minDelay:100 });
             _this.socket = client;
 
 
@@ -143,9 +148,10 @@ module Eureca {
             });
 
 
-            client.ondisconnect(function (e) {
-
-                _this.trigger('onConnectionRetry');
+            client.ondisconnect(function (opts) {
+                _this.trigger('onConnectionRetry', opts);
+                /*
+                
                 _this.tries++;
                 if (_this.tries > _this.maxRetries) //handle 1002 and 1006 sockjs error codes
                 {
@@ -158,12 +164,13 @@ module Eureca {
                 setTimeout(function () {
                     _this.connect();
                 }, utime * 1000);
-
+            */
             });
 
 
             client.onclose(function (e) {
                 _this.trigger('onDisconnect', client, e);
+                _this.trigger('onConnectionLost');
             });
 
             client.onerror(function (e) {

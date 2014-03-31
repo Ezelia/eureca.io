@@ -1,5 +1,4 @@
-/// <reference path="transport/Sockjs.transport.ts" />
-/// <reference path="transport/EngineIO.transport.ts" />
+/// <reference path="transport/Primus.transport.ts" />
 /// <reference path="Transport.ts" />
 /// <reference path="Stub.ts" />
 /// <reference path="EObject.class.ts" />
@@ -45,12 +44,14 @@ module Eureca  {
         private scriptCache: string = '';
 
         // Constructor
-        constructor(public settings?: any = {}) {
+        constructor(public settings: any = {}) {
             super();
             this.stub = new Stub(settings);
 
-            settings.transport = settings.transport || 'engine.io';
-            console.log('* using ' + settings.transport);
+            settings.transformer = settings.transport || 'engine.io';
+            settings.transport = 'primus';
+
+            console.log('* using primus:' + settings.transformer);
 
             this.transport = Transport.get(settings.transport);
 
@@ -96,6 +97,8 @@ module Eureca  {
                 response.end();
                 return;
             }
+
+            
             this.scriptCache = '';
             this.scriptCache += fs.readFileSync(__dirname + this.transport.script);
             this.scriptCache += '\nvar _eureca_prefix = "' + prefix + '";\n';
@@ -173,33 +176,31 @@ module Eureca  {
         private _checkHarmonyProxies()
         {
             if (typeof Proxy == 'undefined' && !hproxywarn) {
-                ELog.log('!!WARNING!! !!WARNING!! !!WARNING!! !!WARNING!! !!WARNING!! !!WARNING!! !!WARNING!!  ', '', '');
                 ELog.log('I', 'Harmony proxy not found', 'using workaround');
                 ELog.log('I', 'to avoid this message please use : node --harmony-proxies <app>', '');
-                ELog.log('=====================================================================================', '', '');
                 hproxywarn = true;
             }
         }
-        listen(port)
-        {
-            this._checkHarmonyProxies();
+        //listen(port)
+        //{
+        //    this._checkHarmonyProxies();
 
-            this.allowedF = this.settings.allow || [];
-            var _prefix = this.settings.prefix || 'eureca.io';
-            //initialising server
-            //var ioServer = io.listen(port, { path: '/' + _prefix });
-            var ioServer = this.transport.createServer(port, { path: '/' + _prefix });
+        //    this.allowedF = this.settings.allow || [];
+        //    var _prefix = this.settings.prefix || 'eureca.io';
+        //    //initialising server
+        //    //var ioServer = io.listen(port, { path: '/' + _prefix });
+        //    var ioServer = this.transport.createServer(port, { path: '/' + _prefix });
 
-            var _this = this;
+        //    var _this = this;
 
-            this._handleServer(ioServer);
-        }
-        installSockJs(server, options) {
-            var sockjs = require('sockjs');
-            var sockjs_server = sockjs.createServer();
-            sockjs_server.installHandlers(server, options);
+        //    this._handleServer(ioServer);
+        //}
+        //installSockJs(server, options) {
+        //    var sockjs = require('sockjs');
+        //    var sockjs_server = sockjs.createServer();
+        //    sockjs_server.installHandlers(server, options);
 
-        }
+        //}
         attach (server:any) {
 
             var app = server;
@@ -210,11 +211,15 @@ module Eureca  {
             this.allowedF = this.settings.allow || [];
             var _prefix = this.settings.prefix || 'eureca.io';
             var _clientUrl = this.settings.clientScript || '/eureca.js';
+            var _transformer = this.settings.transformer;
+            var _parser = this.settings.parser;
 
             //initialising server
             //var ioServer = io.attach(server, { path: '/'+_prefix });
-            var ioServer = this.transport.createServer(server, { prefix: _prefix });
+            var ioServer = this.transport.createServer(server, { prefix: _prefix, transformer:_transformer, parser:_parser });
+            //console.log('Primus ? ', ioServer.primus);
 
+            //var scriptLib = (typeof ioServer.primus == 'function') ? ioServer.primus.library() : null;
 
             var _this = this;
 
@@ -243,11 +248,14 @@ module Eureca  {
 
             //Workaround : nodejs 0.10.0 have a strange behaviour making remoteAddress unavailable when connecting from a nodejs client
             server.on('request', function (req, res) {                
+                if (!req.query) return;
+
                 var id = req.query.sid;
                 var client = _this.clients[req.query.sid];
                 
                 if (client)
-                {                    
+                {                 
+                       
                     client.eureca = client.eureca || {};                    
                     client.eureca.remoteAddress = client.eureca.remoteAddress || req.socket.remoteAddress;
                     client.eureca.remotePort = client.eureca.remotePort || req.socket.remotePort;                    

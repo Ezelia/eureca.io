@@ -5,6 +5,19 @@ eureca (Easy Unobstructive REmote CAll) is a node.js bidirectional RPC library u
 
 please visit the project web page for more code samples http://eureca.io/
 
+Notes on : eureca.io 0.6.0 developement version
+================================================
+the current github repository contains a developement version witch use [Primus.io](https://github.com/primus/primus) to allow multiple transport layers.
+the stable version (on npm repository) use an internal abstraction layer that only support sockjs and engine.io.
+
+when the developement version will become stable, I'll switch the npm version to Primus.
+this will not affect the existing code, everything is done behind the scene :)
+
+Primus.io provide more flexibility since you can choose from multiple transport layers including engine.io, sockjs, socket.io, ws ...etc
+
+this will also let me focus on eureca.io core and features.
+
+
 Setup 
 ======
 [![NPM](https://nodei.co/npm/eureca.io.png)](https://npmjs.org/package/eureca.io)

@@ -11,7 +11,7 @@ module Eureca {
             }
         }
         //Borrowed from RMI.js https://github.com/mmarcon/rmi.js
-        static randomStr(length?:number = 10) {
+        static randomStr(length:number = 10) {
             var rs, i, nextIndex, l, chars = [
                 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
                 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',

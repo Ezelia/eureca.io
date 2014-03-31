@@ -101,7 +101,7 @@ module Eureca.Transports.Sockjs {
         
     }
 
-    var createServer = function (hook, options?: any = {}) {
+    var createServer = function (hook, options: any = {}) {
         var sjsoptions: any = {};
         sjsoptions.prefix = options.prefix ? '/' + options.prefix : undefined;
 
@@ -118,7 +118,7 @@ module Eureca.Transports.Sockjs {
         return server;
     }
 
-    var createClient = function (uri, options?: any = {}) {
+    var createClient = function (uri, options: any = {}) {
         var sjsoptions: any = {};
         sjsoptions.prefix = options.prefix ? options.prefix : undefined;
 

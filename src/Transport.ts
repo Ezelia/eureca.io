@@ -7,7 +7,7 @@ module Eureca {
     // Class
     export class Transport {
         private static transports: any = {};
-        static register(name, clientScript:string, createClient: (uri: string, options?: any) => ISocket, createServer: (hook: any, options?: any) => IServer):bool
+        static register(name, clientScript:string, createClient: (uri: string, options?: any) => ISocket, createServer: (hook: any, options?: any) => IServer):boolean
         {
             if (this.transports[name] !== undefined) return false;
 

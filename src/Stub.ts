@@ -10,7 +10,7 @@ module Eureca {
 
         private callbacks: any;
         // Constructor
-        constructor(public settings?: any = {}) {
+        constructor(public settings: any = {}) {
             this.callbacks = {};
         }
 

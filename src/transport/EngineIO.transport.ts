@@ -61,7 +61,7 @@ module Eureca.Transports.EngineIO {
         }
     }
 
-    var createServer = function (hook, options?: any = {})
+    var createServer = function (hook, options: any = {})
     {
         var eioptions: any = {};
         eioptions.path = options.prefix ? '/' + options.prefix : undefined;
@@ -82,7 +82,7 @@ module Eureca.Transports.EngineIO {
         return server;
     }
 
-    var createClient = function (uri, options?: any = {})
+    var createClient = function (uri, options: any = {})
     {
         var eioptions:any = {};
         eioptions.path = options.prefix ? '/' + options.prefix : undefined;

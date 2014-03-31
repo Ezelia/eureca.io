@@ -65,7 +65,7 @@ module Eureca {
             return Proxy.create((<any>Contract).handlerMaker(target, contract));
         }
 
-        static parseNS(target, ns?:string[]=[], parent?:string='')
+        static parseNS(target, ns:string[]=[], parent:string='')
         {            
             for (var prop in target) {
                 //console.log('parsing prop', parent+prop, typeof target[prop]);
@@ -75,7 +75,8 @@ module Eureca {
                 else
                 {
                     //FIXME : will crash if sub NS has no children : example : exports.id = 'hello'
-                    parseNS(target[prop], ns, parent + prop + '.');
+                    
+                    Contract.parseNS(target[prop], ns, parent + prop + '.');
                 }
                 //contract.push(prop);
             }

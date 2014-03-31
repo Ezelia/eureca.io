@@ -18,6 +18,11 @@ module Eureca {
             this._events[event] = this._events[event] || [];
             this._events[event].push(fct);
         }
+        on(event, fct) {
+            this._events = this._events || {};
+            this._events[event] = this._events[event] || [];
+            this._events[event].push(fct);
+        }
         unbind(event, fct) {
             this._events = this._events || {};
             if (event in this._events === false) return;
