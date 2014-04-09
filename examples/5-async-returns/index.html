@@ -1,0 +1,30 @@
+﻿<!doctype html>
+<html>
+    <head>
+        <title>Engine.io test</title>
+        <script src="/eureca.js"></script>
+    </head>
+    <body>    
+        <script>
+            var client = new Eureca.Client();
+
+            client.ready(function (proxy) {
+                proxy.asyncServerHello()
+                    .onReady(function (r) {
+                        console.log('server responded : ', r);
+                    });
+            });
+
+            client.exports.asyncClientHello = function () {
+                var context = this;
+                context.async = true;
+
+                setTimeout(function () {
+
+                    context.return('Async hello from client');
+                }, 2000);
+
+            }
+        </script>
+    </body>
+</html>

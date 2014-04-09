@@ -83,7 +83,7 @@ module Eureca {
             return ns;
         }
         static ensureContract(target, contract) {
-            var contract = this.parseNS(target);
+            var contract:any = this.parseNS(target);
             //console.log('ns = ', contract);
             /*
             if (typeof Proxy == 'undefined') {

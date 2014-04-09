@@ -136,7 +136,9 @@ module Eureca {
                 if (jobj.f !== undefined) //server invoking client
                     //TODO : check f validity !
                 {
-                    _this.stub.invoke(_this.exports, _this, jobj, _this.socket);
+                    var context: any = { user: { clientId: _this.socket.id }, connection: _this.socket, async: false, retId: jobj._r, 'return': function (result) { this.connection.send(JSON.stringify({ _r: this.retId, r: result })); } };
+
+                    _this.stub.invoke(context, _this, jobj, _this.socket);
                     return;
                 }
 
