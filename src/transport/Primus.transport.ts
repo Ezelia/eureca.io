@@ -14,16 +14,59 @@ module Eureca.Transports.PrimusTransport {
         Primus = require('primus');
     }
 
-    export class Socket implements ISocket {
+    export class Socket extends EObject implements ISocket {
         public request;
         public id;
         public remoteAddress;
+
+
         constructor(public socket?: any) {
+            super();
             this.request = socket.request;
             this.id = socket.id;
-            //FIXME : with nodejs 0.10.0 remoteAddress of nodejs clients is undefined (this seems to be a engine.io issue)
+            //FIXME : with nodejs 0.10.0 remoteAddress of nodejs clients is undefined (this seems to be a engine.io issue)            
             this.remoteAddress = socket.address;
+
+            this.registerEvents(['open', 'message', 'error', 'close', 'reconnecting']);
+
+            this.bindEvents();
         }
+        private bindEvents() {
+            var _this = this;
+            this.socket.on('open', function () {
+                var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
+                args.unshift('open');
+                _this.trigger.apply(_this, args);
+            });
+
+            this.socket.on('data', function () {
+                var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
+                args.unshift('message');
+                _this.trigger.apply(_this, args);
+            });
+
+            this.socket.on('end', function () {
+                var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
+                args.unshift('close');
+                _this.trigger.apply(_this, args);
+            });
+
+            this.socket.on('error', function () {
+                var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
+                args.unshift('error');
+                _this.trigger.apply(_this, args);
+            });
+
+            this.socket.on('reconnecting', function () {
+                var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
+                args.unshift('reconnecting');
+                _this.trigger.apply(_this, args);
+            });
+
+
+
+        }
+
         send(data) {
             
             if (this.socket.send) {

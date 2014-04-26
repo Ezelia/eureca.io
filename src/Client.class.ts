@@ -16,14 +16,14 @@ if (is_nodejs) {
     var _eureca_prefix = 'eureca.io';
 }
 
-var EurecaSocket = function (uri, options) {
-    if (is_nodejs) {
-        var sock = require('engine.io-client')(uri, options);
-        return sock;
-    } else {
-        return new eio.Socket(uri, options);
-    }
-};
+//var EurecaSocket = function (uri, options) {
+//    if (is_nodejs) {
+//        var sock = require('engine.io-client')(uri, options);
+//        return sock;
+//    } else {
+//        return new eio.Socket(uri, options);
+//    }
+//};
 
 module Eureca {
 
@@ -43,11 +43,16 @@ module Eureca {
         public contract: string[];
         
         private stub: Stub;
-        private transport: any;
-        
+        private transport: any;        
+
         // Constructor
         constructor(public settings: any = {}) {
             super();
+
+            
+
+            
+
             this.stub = new Stub(settings);
 
 
@@ -67,7 +72,7 @@ module Eureca {
 
 
 
-            this.registerEvents(['ready', 'onConnect', 'onDisconnect', 'onError', 'onMessage', 'onConnectionLost', 'onConnectionRetry']);
+            this.registerEvents(['ready', 'update', 'onConnect', 'onDisconnect', 'onError', 'onMessage', 'onConnectionLost', 'onConnectionRetry']);
 
 
             if (this.settings.autoConnect) this.connect();
@@ -115,15 +120,20 @@ module Eureca {
                     var jobj = {};
                 }
 
-                if (jobj.__eureca__) //should be first message
+                if (jobj[Eureca.Protocol.contractId]) //should be first message
                 {
-                    _this.contract = jobj.__eureca__;
-                    _this.stub.importRemoteFunction(_this, _this.socket, jobj.__eureca__);
+                    var update = _this.contract && _this.contract.length > 0;
+
+                    _this.contract = jobj[Eureca.Protocol.contractId];
+                    _this.stub.importRemoteFunction(_this, _this.socket, jobj[Eureca.Protocol.contractId]);
 
 
                     var next = function () {
                         _this._ready = true;
-                        _this.trigger('ready', _this);
+                        if (update)
+                            _this.trigger('update', _this, _this.contract);
+                         else
+                            _this.trigger('ready', _this, _this.contract);
                     }
 
                     if (_this.settings.authenticate) _this.settings.authenticate(_this, next);
@@ -133,18 +143,25 @@ module Eureca {
                 }
 
                 // /!\ ordre is important we have to check invoke BEFORE callback
-                if (jobj.f !== undefined) //server invoking client
-                    //TODO : check f validity !
+                if (jobj[Eureca.Protocol.functionId] !== undefined) //server invoking client
                 {
-                    var context: any = { user: { clientId: _this.socket.id }, connection: _this.socket, async: false, retId: jobj._r, 'return': function (result) { this.connection.send(JSON.stringify({ _r: this.retId, r: result })); } };
+
+                    var returnFunc = function (result) {
+                        var retObj = {};
+                        retObj[Eureca.Protocol.signatureId] = this.retId;
+                        retObj[Eureca.Protocol.resultId = result];
+                        this.connection.send(JSON.stringify(retObj));
+                    }
+
+                    var context: any = { user: { clientId: _this.socket.id }, connection: _this.socket, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
 
                     _this.stub.invoke(context, _this, jobj, _this.socket);
                     return;
                 }
 
-                if (jobj._r !== undefined) //invoke result
+                if (jobj[Eureca.Protocol.signatureId] !== undefined) //invoke result
                 {
-                    _this.stub.doCallBack(jobj._r, jobj.r);
+                    _this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId]);
                     return;
                 }
             });
@@ -187,5 +204,5 @@ module Eureca {
 
 }
 
-if (is_nodejs) exports.Eureca = Eureca; 
+if (is_nodejs) exports.Eureca = Eureca;
 else var EURECA = Eureca.Client;

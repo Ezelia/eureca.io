@@ -79,6 +79,10 @@
     <Content Include="examples\99-bidirectional-calls\index.html" />
     <Content Include="examples\99-bidirectional-calls\server.js" />
     <TypeScriptCompile Include="src\transport\Primus.transport.ts" />
+    <TypeScriptCompile Include="src\Protocol.config.ts" />
+    <Content Include="src\Protocol.config.js">
+      <DependentUpon>Protocol.config.ts</DependentUpon>
+    </Content>
     <Content Include="src\transport\Primus.transport.js">
       <DependentUpon>Primus.transport.ts</DependentUpon>
     </Content>

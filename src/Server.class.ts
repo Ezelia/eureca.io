@@ -32,6 +32,7 @@ module Eureca  {
 
     // Class
     export class Server extends EObject {
+        private version = '0.6.0-dev';
 
         public contract: any[];
         public debuglevel: number;
@@ -46,6 +47,8 @@ module Eureca  {
         // Constructor
         constructor(public settings: any = {}) {
             super();
+            
+
             this.stub = new Stub(settings);
 
             settings.transformer = settings.transport || 'engine.io';
@@ -73,7 +76,7 @@ module Eureca  {
         }
 
 
-        getClient (id) {
+        public getClient (id) {
             var conn = this.clients[id];
             if (conn === undefined) return false;
             if (conn.client !== undefined) return conn.client;
@@ -83,14 +86,14 @@ module Eureca  {
             return conn.client;
         }
 
-        getConnection (id) {
+        public getConnection (id) {
             return this.clients[id];
         }
 
 
 
 
-        sendScript(request, response, prefix) {
+        public sendScript(request, response, prefix) {
             if (this.scriptCache != '') {
                 response.writeHead(200);
                 response.write(this.scriptCache);
@@ -111,6 +114,18 @@ module Eureca  {
             response.end();
         }
 
+
+        public updateContract() {
+            this.contract = Contract.ensureContract(this.exports, this.contract);
+            for (var id in this.clients) {
+                var socket = this.clients[id];
+
+                var sendObj = {};
+                sendObj[Eureca.Protocol.contractId] = this.contract;
+                socket.send(JSON.stringify(sendObj));
+            }
+        }
+
         private _handleServer(ioServer:IServer)
         {
             var _this = this;
@@ -127,7 +142,11 @@ module Eureca  {
 
                 _this.contract = Contract.ensureContract(_this.exports, _this.contract);
 
-                socket.send(JSON.stringify({ __eureca__: _this.contract }));
+                var sendObj = {};
+                sendObj[Eureca.Protocol.contractId] = _this.contract;
+                socket.send(JSON.stringify(sendObj));
+
+
                 _this.trigger('onConnect', socket);
 
 
@@ -140,20 +159,28 @@ module Eureca  {
                     } catch (ex) { };
 
                     if (jobj === undefined) return;
-                    if (jobj.f !== undefined) {
-                        var context: any = { user: { clientId: socket.id }, connection: socket, async:false, retId: jobj._r, 'return': function (result) { this.connection.send(JSON.stringify({ _r: this.retId, r: result })); } };
+                    if (jobj[Eureca.Protocol.functionId] !== undefined) {
+
+                        var returnFunc = function (result) {
+                            var retObj = {};
+                            retObj[Eureca.Protocol.signatureId] = this.retId;
+                            retObj[Eureca.Protocol.resultId = result];
+                            this.connection.send(JSON.stringify(retObj));
+                        }
+
+                        var context: any = { user: { clientId: socket.id }, connection: socket, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
 
 
-                        if (!_this.settings.preInvoke || jobj.f == 'authenticate' || (typeof _this.settings.preInvoke == 'function' && _this.settings.preInvoke.apply(context)))
+                        if (!_this.settings.preInvoke || jobj[Eureca.Protocol.functionId] == 'authenticate' || (typeof _this.settings.preInvoke == 'function' && _this.settings.preInvoke.apply(context)))
                             _this.stub.invoke(context, _this, jobj, socket);
 
 
                         return;
                     }
 
-                    if (jobj._r !== undefined) //invoke result
+                    if (jobj[Eureca.Protocol.signatureId] !== undefined) //invoke result
                     {
-                        _this.stub.doCallBack(jobj._r, jobj.r);
+                        _this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId]);
                         return;
                     }
                 });

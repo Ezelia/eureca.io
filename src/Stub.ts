@@ -1,3 +1,5 @@
+/// <reference path="Protocol.config.ts" />
+
 /// <reference path="Util.class.ts" />
 
 
@@ -64,66 +66,38 @@ module Eureca {
 
                         _this.registerCallBack(uid, proxyObj);
 
-                        /*                        
-                        var cb = argsArray[argsArray.length - 1];
-                        if (typeof cb == 'function') {
-                            cb = argsArray.pop();
-                            _this.registerCallBack(uid, cb);
-                        }
-                        /**/
 
-                        RMIObj.f = _this.settings.useIndexes ? idx : fname;
-                        RMIObj._r = uid;
-                        if (argsArray.length > 0) RMIObj.a = argsArray;
+
+                        RMIObj[Protocol.functionId] = _this.settings.useIndexes ? idx : fname;
+                        RMIObj[Protocol.signatureId] = uid;
+                        if (argsArray.length > 0) RMIObj[Protocol.argsId] = argsArray;
                         socket.send(JSON.stringify(RMIObj));
 
                         return proxyObj;
                     }
                 })(i, functions[i]);
             }
-            //this._ready = true;
-            //this.trigger('ready', this);
-            //if (typeof this._readyCB == 'function') this._readyCB();
-            //this._readyCB = false;
+
         }
 
         invoke(context, handle, obj, socket?) {
-            //var handle = <any>this.handle;
-            /*
-            if (obj._r === undefined)
-            {
-                console.log('Invoke error');
-                return;
-            }
-            */
-            /* browing namespace */
-            //var ftokens = obj.f.split('.');
-            //var func = handle.exports;
-            //for (var i = 0; i < ftokens.length; i++) func = func[ftokens[i]];
-            ///* ***************** */
 
-            ////var func = this.exports[obj.f];
-            //if (typeof func != 'function') {
-            //    console.log("Invoke error, unknown function : " + obj.f);
-            //    return;
-            //}
-            //var result = func.apply(context, obj.a);
 
-            
-            var fId = parseInt(obj.f);
-            var fname = isNaN(fId) ? obj.f : handle.contract[fId];
+            var fId = parseInt(obj[Protocol.functionId]);
+            var fname = isNaN(fId) ? obj[Protocol.functionId] : handle.contract[fId];
 
             /* browing namespace */
             var ftokens = fname.split('.');
             var func = handle.exports;
-            for (var i = 0; i < ftokens.length; i++) func = func[ftokens[i]];
+            for (var i = 0; i < ftokens.length; i++)
+                func = func[ftokens[i]];
             /* ***************** */
 
 
             //var func = this.exports[fname];
             if (typeof func != 'function') {
                 //socket.send('Invoke error');
-                console.log('Invoke error', obj.f + ' is not a function', '');
+                console.log('Invoke error', obj[Protocol.functionId] + ' is not a function', '');
                 return;
             }
             //obj.a.push(conn); //add connection object to arguments
@@ -131,14 +105,22 @@ module Eureca {
 
 
             try {
-                obj.a = obj.a || [];
-                var result = func.apply(context, obj.a);
+                obj[Protocol.argsId] = obj[Protocol.argsId] || [];
+                var result = func.apply(context, obj[Protocol.argsId]);
 
                 //console.log('sending back result ', result, obj)
-                if (socket && obj._r && !context.async) socket.send(JSON.stringify({ _r: obj._r, r: result }));
 
-                obj.a.unshift(socket);
-                if (typeof func.onCall == 'function') func.onCall.apply(context, obj.a);
+                if (socket && obj[Protocol.signatureId] && !context.async) {
+
+                    var retObj = {};
+                    retObj[Protocol.signatureId] = obj[Protocol.signatureId];
+                    retObj[Protocol.resultId] = result;
+
+                    socket.send(JSON.stringify(retObj));
+                }
+
+                obj[Protocol.argsId].unshift(socket);
+                if (typeof func.onCall == 'function') func.onCall.apply(context, obj[Protocol.argsId]);
             } catch (ex) {
                 console.log('EURECA Invoke exception!! ', ex.stack);
             }

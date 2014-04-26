@@ -1,2 +1,2 @@
-exports.EurecaClient = require('./lib/EurecaClient.js').Eureca.Client;
-exports.EurecaServer = require('./lib/EurecaServer.js').Eureca.Server;
+exports.Client = exports.EurecaClient = require('./lib/EurecaClient.js').Eureca.Client;
+exports.Server = exports.EurecaServer = require('./lib/EurecaServer.js').Eureca.Server;
