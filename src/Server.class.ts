@@ -164,7 +164,7 @@ module Eureca  {
                         var returnFunc = function (result) {
                             var retObj = {};
                             retObj[Eureca.Protocol.signatureId] = this.retId;
-                            retObj[Eureca.Protocol.resultId = result];
+                            retObj[Eureca.Protocol.resultId] = result;
                             this.connection.send(JSON.stringify(retObj));
                         }
 

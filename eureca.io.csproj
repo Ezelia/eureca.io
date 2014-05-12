@@ -65,6 +65,7 @@
     <Content Include="build\js\engine.io.js" />
     <Content Include="build\js\socket.io.js" />
     <Content Include="build\js\sockjs-0.3.min.js" />
+    <Content Include="TODO.txt" />
     <TypeScriptCompile Include="src\transport\Sockjs.transport.ts" />
     <Content Include="examples\1-websocket-only\client.js" />
     <Content Include="examples\1-websocket-only\server.js" />
