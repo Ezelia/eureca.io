@@ -6,7 +6,6 @@ eureca (Easy Unobstructive REmote CAll) is a node.js bidirectional RPC library u
 please visit the project web page for more code samples http://eureca.io/
 
 
-
 Setup 
 ======
 [![NPM](https://nodei.co/npm/eureca.io.png)](https://npmjs.org/package/eureca.io)
