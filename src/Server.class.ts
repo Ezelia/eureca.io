@@ -107,6 +107,9 @@ module Eureca  {
             this.scriptCache += '\nvar _eureca_prefix = "' + prefix + '";\n';
             this.scriptCache += '\nvar _eureca_uri = "' + getUrl(request) + '";\n';
             this.scriptCache += '\nvar _eureca_host = "' + getUrl(request) + '";\n';
+
+            //FIXME : override primus hardcoded pathname 
+            this.scriptCache += '\nPrimus.prototype.pathname = "/' + prefix+'";\n';
             this.scriptCache += fs.readFileSync(__dirname + '/EurecaClient.js');
 
             response.writeHead(200);

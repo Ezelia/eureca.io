@@ -66,7 +66,7 @@
     <Content Include="build\js\socket.io.js" />
     <Content Include="build\js\sockjs-0.3.min.js" />
     <Content Include="TODO.txt" />
-    <TypeScriptCompile Include="src\transport\Sockjs.transport.ts" />
+    <None Include="src\transport\Sockjs.transport.ts" />
     <Content Include="examples\1-websocket-only\client.js" />
     <Content Include="examples\1-websocket-only\server.js" />
     <Content Include="examples\1-http-server\server.js" />
@@ -115,7 +115,7 @@
     <Content Include="src\Server.class.min.js">
       <DependentUpon>Server.class.ts</DependentUpon>
     </Content>
-    <TypeScriptCompile Include="src\transport\EngineIO.transport.ts" />
+    <None Include="src\transport\EngineIO.transport.ts" />
     <Content Include="src\Stub.js">
       <DependentUpon>Stub.ts</DependentUpon>
     </Content>

@@ -140,7 +140,8 @@ module Eureca.Transports.PrimusTransport {
 
     var createClient = function (uri, options: any = {}) {
         
-        options.pathname = options.prefix ? '/' + options.prefix : undefined;
+        options.pathname = options.prefix ? '' + options.prefix : undefined;
+        options.path = options.prefix ? '/' + options.prefix : undefined;
         var socket;
         if (Eureca.Util.isNodejs) {
             //eioptions.transports = ['websocket', 'polling', 'flashsocket'];
@@ -150,6 +151,7 @@ module Eureca.Transports.PrimusTransport {
             socket = new CSocket(uri);
             
         } else {
+            console.log('>>> Ezelia : createClient', uri, options);
             socket = new Primus(uri, options);
         }
         var client = new Socket(socket);

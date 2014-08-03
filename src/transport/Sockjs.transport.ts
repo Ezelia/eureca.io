@@ -1,3 +1,5 @@
+//Deprecated, Primus do the job :)
+
 /// <reference path="../EObject.class.ts" />
 /// <reference path="../Util.class.ts" />
 /// <reference path="../Transport.ts" />
