@@ -76,14 +76,34 @@ module Eureca  {
         }
 
 
-        public getClient (id) {
+        public getClient(id) {
+            
             var conn = this.clients[id];
+            
             if (conn === undefined) return false;
             if (conn.client !== undefined) return conn.client;
             conn.client = {};
             //this.importClientFunction(conn.client, conn, this.allowedF);
             this.stub.importRemoteFunction(conn.client, conn, this.allowedF);
+
+            
             return conn.client;
+        }
+
+        /*
+         * !! Experimental !!
+         * force regeneration of client remote function signatures
+         * this is needed if for some reason we need to dynamically update allowed client functions at runtime
+         */
+        public updateClientAllowedFunctions(id) {
+            
+
+            var conn = this.clients[id];
+            
+            if (conn === undefined) return false;
+            conn.client = {};
+            //this.importClientFunction(conn.client, conn, this.allowedF);
+            this.stub.importRemoteFunction(conn.client, conn, this.allowedF);
         }
 
         public getConnection (id) {
@@ -128,6 +148,8 @@ module Eureca  {
                 socket.send(JSON.stringify(sendObj));
             }
         }
+
+
 
         private _handleServer(ioServer:IServer)
         {

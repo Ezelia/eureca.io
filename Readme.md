@@ -3,6 +3,8 @@ eureca.io
 
 eureca (Easy Unobstructive REmote CAll) is a node.js bidirectional RPC library using [Primus.io](https://github.com/primus/primus) as a network layer.
 
+it allow you to call server side function from a browser or nodejs client and vice-versa.
+
 please visit the project web page for more code samples http://eureca.io/
 
 
@@ -11,7 +13,50 @@ Setup
 [![NPM](https://nodei.co/npm/eureca.io.png)](https://npmjs.org/package/eureca.io)
 
 
-Code examples 
+Hello World example
+===================
+
+### Client calling server
+* Server side code *
+```javascript
+var EurecaServer = require('eureca.io').EurecaServer;
+var eurecaServer = new EurecaServer();
+
+eurecaServer.exports.helloServer = function (userName) {
+	console.log('Hello Server from ',userName);
+}
+```
+
+* Browser client side code *
+```javascript
+...
+<script src="/eureca.js"></script>
+...
+<script>
+var client = new Eureca.Client(); 
+
+client.ready(function (serverProxy) {
+
+	serverProxy.helloServer();  //will call helloServer in the server side
+	
+});
+</script>
+```
+
+* Nodejs client side code *
+
+
+```javascript
+var EurecaClient = require('eureca.io').EurecaClient;
+var client = new EurecaClient({ uri: 'http://localhost:8000/' });
+ 
+client.ready(function (serverProxy) {
+	serverProxy.helloServer();
+});
+```
+
+
+More examples 
 =============
 
 please check node_modules/eureca.io/examples/ for some example codes
