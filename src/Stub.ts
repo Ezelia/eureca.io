@@ -4,7 +4,7 @@
 
 
 
-// Module
+/** @ignore */
 module Eureca {
 
     // Class

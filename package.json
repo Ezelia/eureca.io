@@ -7,7 +7,7 @@
   },
   "keywords": [
     "RPC",
-	"Primus",
+    "Primus",
     "engine.io",
     "sockjs",
     "socket.io",
@@ -23,10 +23,15 @@
     "url": "https://github.com/Ezelia/eureca.io"
   },
   "dependencies": {
-	"primus": ">= 2.1.0"
+    "primus": ">= 2.1.0"
   },
   "engines": {
     "node": ">=0.10.20"
   },
-  "main": "index.js"
+  "main": "index.js",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-typescript": "^0.6.1",
+    "typescript": "^1.4.1"
+  }
 }

@@ -1,9 +1,22 @@
+/**
+ * 
+ * @namespace Eureca
+ */
 module Eureca {
 
+
+    /**
+     * Eureca ISocket class
+     * @interface ISocket
+     */
     export interface ISocket {
+        id: any;
+        eureca: any;
+
         // Instance member
         send(data: any);
         close();
+
         onopen(callback: (any?) => void );
         onmessage(callback: (any?) => void );
         ondisconnect(callback: (any?) => void );

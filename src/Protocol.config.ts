@@ -1,3 +1,4 @@
+/** @ignore */
 module Eureca {
     export class Protocol {
         static contractId = '__eureca__';

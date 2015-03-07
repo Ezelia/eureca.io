@@ -1,2 +1,33 @@
-exports.Client = exports.EurecaClient = require('./lib/EurecaClient.js').Eureca.Client;
-exports.Server = exports.EurecaServer = require('./lib/EurecaServer.js').Eureca.Server;
+
+exports.Client = require('./lib/EurecaClient.js').Eureca.Client;
+exports.Server = require('./lib/EurecaServer.js').Eureca.Server;
+
+
+
+exports.EurecaServer = (function () {
+    
+
+    function F(args) {
+        return exports.Server.apply(this, args);
+    }
+    F.prototype = exports.Server.prototype;
+
+    return function () {
+        console.log("/!\\  EurecaServer syntax is deprecated please see @");
+        return new F(arguments);
+    }
+})();
+
+exports.EurecaClient = (function () {
+    
+
+    function F(args) {
+        return exports.Client.apply(this, args);
+    }
+    F.prototype = exports.Client.prototype;
+
+    return function () {
+        console.log("/!\\  EurecaClient syntax is deprecated please see @");
+        return new F(arguments);
+    }
+})();

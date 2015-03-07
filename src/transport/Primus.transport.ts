@@ -3,11 +3,16 @@
 /// <reference path="../Transport.ts" />
 /// <reference path="../IServer.interface.ts" />
 /// <reference path="../ISocket.interface.ts" />
-declare var __dirname;
-declare var process;
-declare var require;
-declare var Primus: any;
 
+/** @ignore */
+declare var __dirname;
+/** @ignore */
+declare var process;
+/** @ignore */
+declare var require;
+/** @ignore */
+declare var Primus: any;
+/** @ignore */
 module Eureca.Transports.PrimusTransport {
 
     if (Eureca.Util.isNodejs) {
@@ -18,7 +23,7 @@ module Eureca.Transports.PrimusTransport {
         public request;
         public id;
         public remoteAddress;
-
+        public eureca = {};
 
         constructor(public socket?: any) {
             super();

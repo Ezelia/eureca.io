@@ -6,8 +6,11 @@
 /// <reference path="../IServer.interface.ts" />
 /// <reference path="../ISocket.interface.ts" />
 
+/** @ignore */
 declare var require;
+/** @ignore */
 declare var SockJS: any;
+/** @ignore */
 module Eureca.Transports.Sockjs {
 
     export class Socket implements ISocket {

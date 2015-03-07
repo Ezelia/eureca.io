@@ -6,8 +6,11 @@
 /// <reference path="../IServer.interface.ts" />
 /// <reference path="../ISocket.interface.ts" />
 
+/** @ignore */
 declare var require;
+/** @ignore */
 declare var eio: any;
+/** @ignore */
 module Eureca.Transports.EngineIO {
 
     export class Socket implements ISocket {

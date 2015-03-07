@@ -1,4 +1,7 @@
+/** @ignore */
 declare var exports: any;
+
+/** @ignore */
 module Eureca {
 
     // Class

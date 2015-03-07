@@ -3,11 +3,19 @@
 /// <reference path="EObject.class.ts" />
 /// <reference path="Util.class.ts" />
 
+/** @ignore */
 declare var require: any;
+
+/** @ignore */
 declare var exports: any;
 
+/** @ignore */
 declare var eio: any;
+
+/** @ignore */
 declare var _eureca_host: any;
+
+/** @ignore */
 declare var _eureca_uri: any;
 
 
@@ -25,9 +33,17 @@ if (is_nodejs) {
 //    }
 //};
 
+/**
+ * 
+ * @namespace Eureca
+ */
+
 module Eureca {
 
-    // Class
+    /**
+     * Eureca client class
+     * @class Client
+     */
     export class Client extends EObject {
 
 
@@ -45,7 +61,8 @@ module Eureca {
         private stub: Stub;
         private transport: any;        
 
-        // Constructor
+        
+
         constructor(public settings: any = {}) {
             super();
 
@@ -80,12 +97,13 @@ module Eureca {
             
 
         }
-        disconnect()
+
+        public disconnect()
         {
             this.tries = this.maxRetries+1;
             this.socket.close();
         }
-        connect() {
+        public connect() {
             
             var _this = this;
             var prefix = '';
@@ -112,12 +130,13 @@ module Eureca {
 
             client.onmessage(function (data) {
                 _this.trigger('onMessage', data);
-                
+
+                var jobj: any;
                 try {
-                    var jobj = JSON.parse(data);
+                    jobj = JSON.parse(data);
                 }
                 catch (ex) {
-                    var jobj = {};
+                    jobj = {};
                 }
 
                 if (jobj[Eureca.Protocol.contractId]) //should be first message

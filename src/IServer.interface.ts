@@ -1,5 +1,6 @@
 /// <reference path="ISocket.interface.ts" />
 
+/** @ignore */
 module Eureca {
 
     export interface IServer {

@@ -4,9 +4,16 @@
 /// <reference path="EObject.class.ts" />
 /// <reference path="Contract.class.ts" />
 
+/** @ignore */
 declare var require: any;
+
+/** @ignore */
 declare var exports: any;
+
+/** @ignore */
 declare var __dirname: any;
+
+/** @ignore */
 declare var Proxy: any;
 
 var fs = require('fs');
@@ -28,9 +35,13 @@ var hproxywarn = false;
 var clientUrl = {};
 var ELog = console;
 
+
+/**
+ * 
+ * @namespace Eureca
+ */
 module Eureca  {
 
-    // Class
     export class Server extends EObject {
         private version = '0.6.0-dev';
 
@@ -44,7 +55,30 @@ module Eureca  {
         private stub: Stub;
         private scriptCache: string = '';
 
-        // Constructor
+        /**
+         * Eureca server constructor
+         * This constructor takes an optional settings object
+         * @constructor Server
+         * @param {enum} [settings=null] - have the following properties
+         * @property {string} [settings.transport=engine.io] - can be "engine.io", "sockjs", "websockets", "faye" or "browserchannel" by default "engine.io" is used
+         * 
+         * @example
+         * var Eureca = require('eureca.io');
+         * //use default transport
+         * var server = new Eureca.Server();
+         * 
+         * 
+         * @example
+         * var Eureca = require('eureca.io');
+         * //use websockets transport
+         * var server = new Eureca.Server({transport:'websockets'});
+         * 
+         * 
+         * @see attach
+         * @see getClient
+         * 
+         * 
+         */
         constructor(public settings: any = {}) {
             super();
             
@@ -76,6 +110,41 @@ module Eureca  {
         }
 
 
+//Virtual member for JSDoc
+/**
+* All declared functions under this namespace become available to the clients.
+* @namespace Server exports
+* @memberOf Server
+* 
+* @example
+* var Eureca = require('eureca.io');
+* //use default transport
+* var server = new Eureca.Server();
+* server.exports.add = function(a, b) {
+*      return a + b;
+* }
+*/
+
+
+
+        /**
+         * This method is used to get the client proxy of a given connection.
+         * it allows the server to call remote client function
+         * 
+         * @function Server#getClient
+         * @param {String} id - client identifier
+         * @returns {Proxy}
+         * 
+        * @example
+        * //we suppose here that the clients are exposing hello() function
+        * //onConnect event give the server an access to the client socket
+        * server.onConnect(function (socket) {
+        *      //get client proxy by socket ID
+        *      var client = server.getClient(socket.id);
+        *      //call remote hello() function.
+        *      client.hello();
+        * }         
+         */
         public getClient(id) {
             
             var conn = this.clients[id];
@@ -90,10 +159,12 @@ module Eureca  {
             return conn.client;
         }
 
-        /*
-         * !! Experimental !!
+        /**
+         * **!! Experimental !! **<br />
          * force regeneration of client remote function signatures
          * this is needed if for some reason we need to dynamically update allowed client functions at runtime
+         * @function Server#updateClientAllowedFunctions
+         * @param {String} id - client identifier
          */
         public updateClientAllowedFunctions(id) {
             
@@ -113,7 +184,7 @@ module Eureca  {
 
 
 
-        public sendScript(request, response, prefix) {
+        private sendScript(request, response, prefix) {
             if (this.scriptCache != '') {
                 response.writeHead(200);
                 response.write(this.scriptCache);
@@ -137,7 +208,13 @@ module Eureca  {
             response.end();
         }
 
-
+        /**
+         * **!! Experimental !! **<br />
+         * Sends exported server functions to all connected clients <br />
+         * This can be used if the server is designed to dynamically expose new methods.
+         * 
+         * @function Server#updateContract
+         */
         public updateContract() {
             this.contract = Contract.ensureContract(this.exports, this.contract);
             for (var id in this.clients) {
@@ -155,11 +232,11 @@ module Eureca  {
         {
             var _this = this;
             //ioServer.on('connection', function (socket) {
-            ioServer.onconnect(function (socket) {
-                socket.eureca = {};
-                socket.siggg = 'A';
+            ioServer.onconnect(function (socket: ISocket) {
                 
-                socket.eureca.remoteAddress = socket.remoteAddress;
+                //socket.siggg = 'A';
+                
+                socket.eureca.remoteAddress = (<any>socket).remoteAddress;
 
                 _this.clients[socket.id] = socket;
 
@@ -172,10 +249,24 @@ module Eureca  {
                 socket.send(JSON.stringify(sendObj));
 
 
+                /**
+                * Triggered each time a new client is connected
+                *
+                * @event Server#onConnect
+                * @property {ISocket} socket - client socket.
+                */
                 _this.trigger('onConnect', socket);
 
 
                 socket.onmessage(function (message) {
+
+                    /**
+                    * Triggered each time a new message is received from a client.
+                    *
+                    * @event Server#onMessage
+                    * @property {String} message - the received message.
+                    * @property {ISocket} socket - client socket.
+                    */
                     _this.trigger('onMessage', message, socket);
 
                     var jobj;
@@ -211,11 +302,27 @@ module Eureca  {
                 });
 
                 socket.onerror(function (e) {
+
+
+                    /**
+                    * triggered if an error occure.
+                    *
+                    * @event Server#onError
+                    * @property {String} error - the error message
+                    * @property {ISocket} socket - client socket.
+                    */
                     _this.trigger('onError', e, socket);
                 });
 
 
                 socket.onclose(function () {
+
+                    /**
+                    * triggered when the client is disconneced.
+                    *
+                    * @event Server#onDisconnect
+                    * @property {ISocket} socket - client socket.
+                    */
                     _this.trigger('onDisconnect', socket);
                     delete _this.clients[socket.id];
                     //console.log('i', '#of clients changed ', EURECA.clients.length, );
@@ -253,7 +360,18 @@ module Eureca  {
         //    sockjs_server.installHandlers(server, options);
 
         //}
-        attach (server:any) {
+
+        /**
+         * Sends exported server functions to all connected clients <br />
+         * This can be used if the server is designed to dynamically expose new methods.
+         * 
+         * @function attach
+         * @memberof Server#
+         * @param {Server} - a nodejs {@link https://nodejs.org/api/http.html#http_class_http_server|nodejs http server}
+         *  or {@link http://expressjs.com/api.html#application|expressjs Application}
+         * 
+         */
+        public attach (server:any) {
 
             var app = server;
             if (server._events.request !== undefined && server.routes === undefined) app = server._events.request;
@@ -323,4 +441,6 @@ module Eureca  {
     }
 
 }
+
+
 exports.Eureca = Eureca;

@@ -1,6 +1,11 @@
+/** @ignore */
 declare var exports: any;
+
+/** @ignore */
 declare var Proxy: any;
 
+
+/** @ignore */
 module Eureca {
     export class Contract {
         // Constructor

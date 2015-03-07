@@ -65,6 +65,7 @@
     <Content Include="build\js\engine.io.js" />
     <Content Include="build\js\socket.io.js" />
     <Content Include="build\js\sockjs-0.3.min.js" />
+    <Content Include="Gruntfile.js" />
     <Content Include="TODO.txt" />
     <None Include="src\transport\Sockjs.transport.ts" />
     <Content Include="examples\1-websocket-only\client.js" />
@@ -79,11 +80,9 @@
     <Content Include="examples\99-bidirectional-calls\client.js" />
     <Content Include="examples\99-bidirectional-calls\index.html" />
     <Content Include="examples\99-bidirectional-calls\server.js" />
+    <Content Include="tsdoc.json" />
     <TypeScriptCompile Include="src\transport\Primus.transport.ts" />
     <TypeScriptCompile Include="src\Protocol.config.ts" />
-    <Content Include="src\Protocol.config.js">
-      <DependentUpon>Protocol.config.ts</DependentUpon>
-    </Content>
     <Content Include="src\transport\Primus.transport.js">
       <DependentUpon>Primus.transport.ts</DependentUpon>
     </Content>
@@ -97,48 +96,15 @@
     <Content Include="tests\spec\test1.spec.js" />
     <TypeScriptCompile Include="src\Stub.ts" />
     <TypeScriptCompile Include="src\Util.class.ts" />
-    <Content Include="src\Client.class.js">
-      <DependentUpon>Client.class.ts</DependentUpon>
-    </Content>
-    <Content Include="src\Client.class.min.js">
-      <DependentUpon>Client.class.ts</DependentUpon>
-    </Content>
     <TypeScriptCompile Include="src\ISocket.interface.ts" />
     <TypeScriptCompile Include="src\IServer.interface.ts" />
     <TypeScriptCompile Include="src\Transport.ts" />
-    <Content Include="src\file1.js">
-      <DependentUpon>Transport.ts</DependentUpon>
-    </Content>
-    <Content Include="src\Server.class.js">
-      <DependentUpon>Server.class.ts</DependentUpon>
-    </Content>
-    <Content Include="src\Server.class.min.js">
-      <DependentUpon>Server.class.ts</DependentUpon>
-    </Content>
     <None Include="src\transport\EngineIO.transport.ts" />
-    <Content Include="src\Stub.js">
-      <DependentUpon>Stub.ts</DependentUpon>
-    </Content>
-    <Content Include="src\Stub.min.js">
-      <DependentUpon>Stub.ts</DependentUpon>
-    </Content>
-    <Content Include="src\Transport.js">
-      <DependentUpon>Transport.ts</DependentUpon>
-    </Content>
-    <Content Include="src\Transport.min.js">
-      <DependentUpon>Transport.ts</DependentUpon>
-    </Content>
     <Content Include="src\transport\EngineIO.transport.js">
       <DependentUpon>EngineIO.transport.ts</DependentUpon>
     </Content>
     <Content Include="src\transport\EngineIO.transport.min.js">
       <DependentUpon>EngineIO.transport.ts</DependentUpon>
-    </Content>
-    <Content Include="src\Util.class.js">
-      <DependentUpon>Util.class.ts</DependentUpon>
-    </Content>
-    <Content Include="src\Util.class.min.js">
-      <DependentUpon>Util.class.ts</DependentUpon>
     </Content>
     <Content Include="examples\client1.js" />
     <Content Include="examples\1-http-server\client.js" />
@@ -171,33 +137,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="src\Util.class.js.map">
-      <DependentUpon>Util.class.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="src\Server.class.js.map">
-      <DependentUpon>Server.class.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="src\Client.class.js.map">
-      <DependentUpon>Client.class.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="src\Transport.js.map">
-      <DependentUpon>Transport.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="src\transport\EngineIO.transport.js.map">
       <DependentUpon>EngineIO.transport.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="src\Stub.js.map">
-      <DependentUpon>Stub.ts</DependentUpon>
     </Content>
   </ItemGroup>
   <ItemGroup>

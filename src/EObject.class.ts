@@ -1,3 +1,4 @@
+/** @ignore */
 module Eureca {
     export class EObject {
         _events: any;

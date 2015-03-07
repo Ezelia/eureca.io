@@ -1,7 +1,7 @@
 /// <reference path="ISocket.interface.ts" />
 /// <reference path="IServer.interface.ts" />
 
-
+/** @ignore */
 module Eureca {
     
     // Class

@@ -3,11 +3,9 @@ var fs = require('fs');
 
 var server = http.createServer();
 
+var Eureca = require('../../');
 
-
-var EurecaServer = require('../../').EurecaServer;
-
-var eurecaServer = new EurecaServer();
+var eurecaServer = new Eureca.Server();
 
 eurecaServer.attach(server);
 
