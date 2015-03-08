@@ -237,6 +237,7 @@ module Eureca  {
         private _handleServer(ioServer:IServer)
         {
             var _this = this;
+
             //ioServer.on('connection', function (socket) {
             ioServer.onconnect(function (socket) {
                 
