@@ -91,6 +91,9 @@ module Eureca.Transports.PrimusTransport {
                 this.socket.close();
             }
         }
+
+
+        //deprecated ?
         onopen(callback: (any?) => void) {
             this.socket.on('open', callback);
         }

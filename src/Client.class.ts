@@ -74,8 +74,9 @@ module Eureca {
          * &lt;/html&gt;
          * 
          * 
-         * @see attach
-         * @see getClient
+         * @see connect
+         * @see disconnect
+         * @see isReady
          * 
          * 
          */
@@ -214,13 +215,13 @@ module Eureca {
             _this.socket = client;
 
 
-            client.onopen(function () {                
+            client.on('open', function () {                
                 _this.trigger('onConnect', client);
                 _this.tries = 0;                
             });
 
 
-            client.onmessage(function (data) {
+            client.on('message', function (data) {
                 _this.trigger('onMessage', data);
 
                 var jobj: any;
@@ -292,7 +293,7 @@ module Eureca {
             });
 
 
-            client.ondisconnect(function (opts) {
+            client.on('reconnecting', function (opts) {
                 _this.trigger('onConnectionRetry', opts);
                 /*
                 
@@ -312,12 +313,12 @@ module Eureca {
             });
 
 
-            client.onclose(function (e) {
+            client.on('close', function (e) {
                 _this.trigger('onDisconnect', client, e);
                 _this.trigger('onConnectionLost');
             });
 
-            client.onerror(function (e) {
+            client.on('error', function (e) {
                 _this.trigger('onError', e);
             });
 

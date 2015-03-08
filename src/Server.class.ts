@@ -238,7 +238,7 @@ module Eureca  {
         {
             var _this = this;
             //ioServer.on('connection', function (socket) {
-            ioServer.onconnect(function (socket: ISocket) {
+            ioServer.onconnect(function (socket) {
                 
                 //socket.siggg = 'A';
                 
@@ -264,7 +264,7 @@ module Eureca  {
                 _this.trigger('onConnect', socket);
 
 
-                socket.onmessage(function (message) {
+                socket.on('message', function (message) {
 
                     /**
                     * Triggered each time a new message is received from a client.
@@ -307,7 +307,7 @@ module Eureca  {
                     }
                 });
 
-                socket.onerror(function (e) {
+                socket.on('error', function (e) {
 
 
                     /**
@@ -321,7 +321,7 @@ module Eureca  {
                 });
 
 
-                socket.onclose(function () {
+                socket.on('close', function () {
 
                     /**
                     * triggered when the client is disconneced.
