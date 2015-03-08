@@ -1,10 +1,10 @@
 ﻿var express = require('express')
   , app = express(app)
   , server = require('http').createServer(app);
-var EurecaServer = require('../../').EurecaServer;
+var Eureca = require('../../');
 
 //use sockjs instead of engine.io
-var eurecaServer = new EurecaServer({ transport: 'sockjs' });
+var eurecaServer = new Eureca.Server({ transport: 'sockjs' });
 
 eurecaServer.attach(server);
 

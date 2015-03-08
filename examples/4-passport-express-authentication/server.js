@@ -151,9 +151,9 @@ app.get('/logout', function(req, res){
 
 
 var server = require('http').createServer(app);
-var EurecaServer = require('../../').EurecaServer;
+var Eureca = require('../../');
 //var EurecaServer = require('eureca.io').EurecaServer;
-var eurecaServer = new EurecaServer({
+var eurecaServer = new Eureca.Server({
     transport: 'engine.io',
     authenticate: function (authToken) {
         console.log('auth called');

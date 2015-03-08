@@ -1,12 +1,8 @@
-/**
- * 
- * @namespace Eureca
- */
 module Eureca {
 
 
     /**
-     * Eureca ISocket class
+     * Eureca ISocket interface
      * @interface ISocket
      */
     export interface ISocket {

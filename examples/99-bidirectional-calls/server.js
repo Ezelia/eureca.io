@@ -5,9 +5,9 @@ var express = require('express')
   , server = require('http').createServer(app)
   //, io = require('engine.io').attach(server, { path: '/eureca.io' });
 
-var EurecaServer = require('../').EurecaServer;
+var Eureca = require('../../');
 
-var eurecaServer = new EurecaServer({ allow: ['sub', 'ns.hello', 'ns2.ns3.h2'], debuglevel: 4 });
+var eurecaServer = new Eureca.Server({ allow: ['sub', 'ns.hello', 'ns2.ns3.h2'], debuglevel: 4 });
 
 eurecaServer.attach(server);
 

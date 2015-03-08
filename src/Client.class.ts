@@ -33,17 +33,52 @@ if (is_nodejs) {
 //    }
 //};
 
-/**
- * 
- * @namespace Eureca
- */
 
 module Eureca {
 
-    /**
-     * Eureca client class
-     * @class Client
-     */
+        /**
+         * Eureca client class
+         * This constructor takes an optional settings object
+         * @constructor Client
+         * @param {object} [settings] - have the following properties <br />
+         * * **uri** : Eureca server WS uri, browser client can automatically guess the server URI if you are using a single Eureca server but Nodejs client need this parameter.
+         * * **prefix** (optional) : This determines the websocket path, it's unvisible to the user but if for some reason you want to rename this path use this parameter. (default=eureca.io)
+         * * **retry** (optional) : Determines max retries to reconnect to the server if the connection is lost. (default=20)
+         * * **autoConnect** (optional) : Estabilish connection automatically after instantiation.<br />if set to False you'll need to call client.connect() explicitly. (default=true)
+         *          
+         * 
+         * @example 
+         * //<h4>Example of a nodejs client</h4>
+         * var Eureca = require('eureca.io');
+         * var client = new Eureca.Client({ uri: 'ws://localhost:8000/', prefix: 'eureca.io', retry: 3 });
+         * client.ready(function (serverProxy) {
+         *    // ... 
+         * });
+         * 
+         * @example
+         * //<h4>Equivalent browser client</h4>
+         * &lt;!doctype html&gt;
+         * &lt;html&gt;
+         *     &lt;head&gt;
+         *         &lt;script src=&quot;/eureca.js&quot;&gt;&lt;/script&gt;
+         *     &lt;/head&gt;
+         *     &lt;body&gt;    
+         *         &lt;script&gt;
+         *             var client = new Eureca.Client({prefix: 'eureca.io', retry: 3 });
+         *             //uri is optional in browser client
+         *             client.ready(function (serverProxy) {
+         *                 // ... 
+         *             });
+         *         &lt;/script&gt;
+         *     &lt;/body&gt;
+         * &lt;/html&gt;
+         * 
+         * 
+         * @see attach
+         * @see getClient
+         * 
+         * 
+         */
     export class Client extends EObject {
 
 
@@ -54,14 +89,36 @@ module Eureca {
         public tries: number=0;
         public prefix: string;
         public uri: string;
-        public exports: any;
+
+
+        /**
+         * When the connection is estabilished, the server proxy object allow calling exported server functions.
+         * @var {object} Client#serverProxy 
+         * 
+         */
+        public serverProxy: any = {};
+
         public socket: any;
         public contract: string[];
         
         private stub: Stub;
         private transport: any;        
 
+
+
         
+        /**
+        * All declared functions under this namespace become available to the server <b>if they are allowed in the server side</b>.
+        * @namespace Client exports
+        * @memberOf Client
+        * 
+        * @example
+        * var client = new Eureca.Client({..});
+        * client.exports.alert = function(message) {
+        *       alert(message);
+        * }
+        */
+        public exports: any;
 
         constructor(public settings: any = {}) {
             super();
@@ -98,11 +155,46 @@ module Eureca {
 
         }
 
+
+        /**
+         * close client connection
+         * 
+         * 
+         * @function Client#disconnect
+         *    
+         */
         public disconnect()
         {
             this.tries = this.maxRetries+1;
             this.socket.close();
         }
+
+
+        /**
+        * indicate if the client is ready or not, it's better to use client.ready() event, but if for some reason
+        * you need to check if the client is ready without using the event system you can use this.<br />
+        * 
+         * @function Client#isReady
+         * @return {boolean} - true if the client is ready   
+         * 
+         * @example
+         * var client = new Eureca.Client({..});
+         * //... 
+         * if (client.isReady()) {
+         *      client.serverProxy.foo();
+         * }
+         */
+        public isReady() {
+            return this._ready;
+        }
+
+        /**
+         * connect client 
+         * 
+         * 
+         * @function Client#connect
+         *    
+         */
         public connect() {
             
             var _this = this;
@@ -144,15 +236,29 @@ module Eureca {
                     var update = _this.contract && _this.contract.length > 0;
 
                     _this.contract = jobj[Eureca.Protocol.contractId];
-                    _this.stub.importRemoteFunction(_this, _this.socket, jobj[Eureca.Protocol.contractId]);
+                    _this.stub.importRemoteFunction(_this.serverProxy, _this.socket, jobj[Eureca.Protocol.contractId]);
 
 
                     var next = function () {
                         _this._ready = true;
-                        if (update)
-                            _this.trigger('update', _this, _this.contract);
-                         else
-                            _this.trigger('ready', _this, _this.contract);
+                        if (update) {
+                            _this.trigger('update', _this.serverProxy, _this.contract);
+                        }
+                        else {
+
+                            /**
+                            * Triggered when the connection is estabilished and server remote functions available to the client.
+                            *
+                            * @event Client#ready
+                            * @property {Proxy} serverProxy - server proxy object.
+                            * @example
+                            * client.ready(function (serverProxy) {
+                            *    serverProxy.hello();    
+                            * });                           
+                            * 
+                            */
+                            _this.trigger('ready', _this.serverProxy, _this.contract);
+                        }
                     }
 
                     if (_this.settings.authenticate) _this.settings.authenticate(_this, next);

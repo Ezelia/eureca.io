@@ -1,9 +1,10 @@
 ﻿var express = require('express')
   , app = express(app)
   , server = require('http').createServer(app);
-var EurecaServer = require('../../').EurecaServer;
+var Eureca = require('../../');
 
-var eurecaServer = new EurecaServer();
+
+var eurecaServer = new Eureca.Server();
 
 eurecaServer.attach(server);
 

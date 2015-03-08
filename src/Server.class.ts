@@ -35,25 +35,8 @@ var hproxywarn = false;
 var clientUrl = {};
 var ELog = console;
 
-
-/**
- * 
- * @namespace Eureca
- */
 module Eureca  {
 
-    export class Server extends EObject {
-        private version = '0.6.0-dev';
-
-        public contract: any[];
-        public debuglevel: number;
-        public exports: any;
-        public allowedF: any[];
-        public clients: any;
-
-        private transport: any;
-        private stub: Stub;
-        private scriptCache: string = '';
 
         /**
          * Eureca server constructor
@@ -79,6 +62,39 @@ module Eureca  {
          * 
          * 
          */
+    export class Server extends EObject {
+        private version = '0.6.0-dev';
+
+        public contract: any[];
+        public debuglevel: number;
+
+
+        public allowedF: any[];
+        public clients: any;
+
+        private transport: any;
+        private stub: Stub;
+        private scriptCache: string = '';
+
+
+
+        
+        /**
+        * All declared functions under this namespace become available to the clients.
+        * @namespace Server exports
+        * @memberOf Server
+        * 
+        * @example
+        * var Eureca = require('eureca.io');
+        * //use default transport
+        * var server = new Eureca.Server();
+        * server.exports.add = function(a, b) {
+        *      return a + b;
+        * }
+        */
+        public exports: any;
+
+
         constructor(public settings: any = {}) {
             super();
             
@@ -95,8 +111,11 @@ module Eureca  {
             this.contract = [];
             this.debuglevel = settings.debuglevel || 1;
 
-            var _exports = {};
-            this.exports = Contract.proxify(_exports, this.contract);
+            //Removing need for Harmony proxies for simplification
+            //var _exports = {};            
+            //this.exports = Contract.proxify(_exports, this.contract);
+
+            this.exports = {};
             this.allowedF = [];
 
             this.clients = {};
@@ -110,20 +129,7 @@ module Eureca  {
         }
 
 
-//Virtual member for JSDoc
-/**
-* All declared functions under this namespace become available to the clients.
-* @namespace Server exports
-* @memberOf Server
-* 
-* @example
-* var Eureca = require('eureca.io');
-* //use default transport
-* var server = new Eureca.Server();
-* server.exports.add = function(a, b) {
-*      return a + b;
-* }
-*/
+
 
 
 
@@ -332,34 +338,17 @@ module Eureca  {
             });
 
         }
-        private _checkHarmonyProxies()
-        {
-            if (typeof Proxy == 'undefined' && !hproxywarn) {
-                ELog.log('I', 'Harmony proxy not found', 'using workaround');
-                ELog.log('I', 'to avoid this message please use : node --harmony-proxies <app>', '');
-                hproxywarn = true;
-            }
-        }
-        //listen(port)
+
+        //Removing need for Harmony proxies for simplification
+        //private _checkHarmonyProxies()
         //{
-        //    this._checkHarmonyProxies();
-
-        //    this.allowedF = this.settings.allow || [];
-        //    var _prefix = this.settings.prefix || 'eureca.io';
-        //    //initialising server
-        //    //var ioServer = io.listen(port, { path: '/' + _prefix });
-        //    var ioServer = this.transport.createServer(port, { path: '/' + _prefix });
-
-        //    var _this = this;
-
-        //    this._handleServer(ioServer);
+        //    if (typeof Proxy == 'undefined' && !hproxywarn) {
+        //        ELog.log('I', 'Harmony proxy not found', 'using workaround');
+        //        ELog.log('I', 'to avoid this message please use : node --harmony-proxies <app>', '');
+        //        hproxywarn = true;
+        //    }
         //}
-        //installSockJs(server, options) {
-        //    var sockjs = require('sockjs');
-        //    var sockjs_server = sockjs.createServer();
-        //    sockjs_server.installHandlers(server, options);
 
-        //}
 
         /**
          * Sends exported server functions to all connected clients <br />
@@ -376,7 +365,7 @@ module Eureca  {
             var app = server;
             if (server._events.request !== undefined && server.routes === undefined) app = server._events.request;
 
-            this._checkHarmonyProxies();
+            //this._checkHarmonyProxies();
 
             this.allowedF = this.settings.allow || [];
             var _prefix = this.settings.prefix || 'eureca.io';

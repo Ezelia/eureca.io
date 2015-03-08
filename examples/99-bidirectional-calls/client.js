@@ -1,6 +1,6 @@
-﻿var EurecaClient = require('../').EurecaClient;
+﻿var Eureca = require('../../');
 
-var client = new EurecaClient({ uri: 'http://localhost:8000/', prefix: 'eureca.io', retry:3 /*, useIndexes:true*/ });
+var client = new Eureca.Client({ uri: 'http://localhost:8000/', prefix: 'eureca.io', retry:3 /*, useIndexes:true*/ });
 
 client.ready(function (proxy) {
 
