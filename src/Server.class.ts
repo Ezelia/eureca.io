@@ -42,20 +42,35 @@ module Eureca  {
          * Eureca server constructor
          * This constructor takes an optional settings object
          * @constructor Server
-         * @param {enum} [settings=null] - have the following properties
+         * @param {object} [settings] - have the following properties
          * @property {string} [settings.transport=engine.io] - can be "engine.io", "sockjs", "websockets", "faye" or "browserchannel" by default "engine.io" is used
+         * @property {function} [settings.authenticate] - If this function is defined, the client will not be able to invoke server functions until it successfully call the client side authenticate method, which will invoke this function.
          * 
          * @example
+         * <h4> # default instantiation</h4>
          * var Eureca = require('eureca.io');
          * //use default transport
          * var server = new Eureca.Server();
          * 
          * 
          * @example
+         * <h4> # custom transport instantiation </h4>
          * var Eureca = require('eureca.io');
          * //use websockets transport
          * var server = new Eureca.Server({transport:'websockets'});
          * 
+         * @example
+         * <h4> # Authentication </h4>
+         * var Eureca = require('eureca.io');
+         * 
+         * var eurecaServer = new Eureca.Server({
+         *     authenticate: function (authToken, next) {        
+         *         console.log('Called Auth with token=', authToken);
+         * 
+         *         if (isValidToekn(authToken)) next();  // authentication success
+         *         else next('Auth failed'); //authentication fail
+         *     }
+         * });
          * 
          * @see attach
          * @see getClient
@@ -76,6 +91,7 @@ module Eureca  {
         private stub: Stub;
         private scriptCache: string = '';
 
+        private useAuthentication:boolean;
 
 
         
@@ -120,9 +136,12 @@ module Eureca  {
 
             this.clients = {};
 
+            this.useAuthentication = (typeof this.settings.authenticate == 'function');
 
-            if (typeof this.settings.authenticate == 'function')
+            if (this.useAuthentication)
                 this.exports.authenticate = this.settings.authenticate;
+
+            
 
             this.registerEvents(['onConnect', 'onDisconnect', 'onMessage', 'onError']);
 
@@ -276,12 +295,54 @@ module Eureca  {
                     */
                     _this.trigger('onMessage', message, socket);
 
+                    
+
                     var jobj;
-                    try {
-                        jobj = JSON.parse(message);
-                    } catch (ex) { };
+
+                    if (typeof message != 'object') {
+                        try {
+                            jobj = JSON.parse(message);
+                        } catch (ex) { };
+                    }
+                    else {
+                        jobj = message;
+                    }
+
 
                     if (jobj === undefined) return;
+
+                    //Handle authentication
+                    if (jobj[Eureca.Protocol.authReq] !== undefined) {
+                        
+                        if (typeof _this.settings.authenticate == 'function')
+                        {
+                            var args = jobj[Eureca.Protocol.authReq];
+
+                            args.push(function (error) {
+
+                                if (error == null) {
+                                    socket.eureca.authenticated = true;
+                                }
+
+                                var authResponse = {};
+                                authResponse[Eureca.Protocol.authResp] = [error];
+                                socket.send(authResponse);
+
+                            });
+                            
+                            _this.settings.authenticate.apply(_this, args);
+
+                        }
+                        return;
+                    }
+
+
+                    if (_this.useAuthentication && !socket.eureca.authenticated) {
+                        console.log('Authentication needed for ', socket.id);
+                        return;
+                    }
+
+                    //handle remote call
                     if (jobj[Eureca.Protocol.functionId] !== undefined) {
 
                         var returnFunc = function (result) {
@@ -294,13 +355,15 @@ module Eureca  {
                         var context: any = { user: { clientId: socket.id }, connection: socket, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
 
 
-                        if (!_this.settings.preInvoke || jobj[Eureca.Protocol.functionId] == 'authenticate' || (typeof _this.settings.preInvoke == 'function' && _this.settings.preInvoke.apply(context)))
-                            _this.stub.invoke(context, _this, jobj, socket);
+                        //if (!_this.settings.preInvoke || jobj[Eureca.Protocol.functionId] == 'authenticate' || (typeof _this.settings.preInvoke == 'function' && _this.settings.preInvoke.apply(context)))
+                        
+                        _this.stub.invoke(context, _this, jobj, socket);
 
 
                         return;
                     }
 
+                    //handle remote response
                     if (jobj[Eureca.Protocol.signatureId] !== undefined) //invoke result
                     {
                         _this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId]);

@@ -23,7 +23,7 @@ module Eureca.Transports.PrimusTransport {
         public request;
         public id;
         public remoteAddress;
-        public eureca = {};
+        public eureca:any = {};
 
         constructor(public socket?: any) {
             super();
@@ -32,7 +32,7 @@ module Eureca.Transports.PrimusTransport {
             //FIXME : with nodejs 0.10.0 remoteAddress of nodejs clients is undefined (this seems to be a engine.io issue)            
             this.remoteAddress = socket.address;
 
-            this.registerEvents(['open', 'message', 'error', 'close', 'reconnecting']);
+            //this.registerEvents(['open', 'message', 'error', 'close', 'reconnecting']);
 
             this.bindEvents();
         }
@@ -71,7 +71,9 @@ module Eureca.Transports.PrimusTransport {
 
 
         }
-
+        isAuthenticated(): boolean {
+            return this.eureca.authenticated;
+        }
         send(data) {
             
             if (this.socket.send) {

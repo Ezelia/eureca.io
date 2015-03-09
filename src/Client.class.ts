@@ -33,7 +33,6 @@ if (is_nodejs) {
 //    }
 //};
 
-
 module Eureca {
 
         /**
@@ -41,10 +40,10 @@ module Eureca {
          * This constructor takes an optional settings object
          * @constructor Client
          * @param {object} [settings] - have the following properties <br />
-         * * **uri** : Eureca server WS uri, browser client can automatically guess the server URI if you are using a single Eureca server but Nodejs client need this parameter.
-         * * **prefix** (optional) : This determines the websocket path, it's unvisible to the user but if for some reason you want to rename this path use this parameter. (default=eureca.io)
-         * * **retry** (optional) : Determines max retries to reconnect to the server if the connection is lost. (default=20)
-         * * **autoConnect** (optional) : Estabilish connection automatically after instantiation.<br />if set to False you'll need to call client.connect() explicitly. (default=true)
+         * @property {URI} settings.uri - Eureca server WS uri, browser client can automatically guess the server URI if you are using a single Eureca server but Nodejs client need this parameter.
+         * @property {string} [settings.prefix=eureca.io] - This determines the websocket path, it's unvisible to the user but if for some reason you want to rename this path use this parameter. 
+         * @property {int} [settings.retry=20] - Determines max retries to reconnect to the server if the connection is lost.
+         * @property {boolean} [settings.autoConnect=true] - Estabilish connection automatically after instantiation.<br />if set to False you'll need to call client.connect() explicitly.
          *          
          * 
          * @example 
@@ -73,7 +72,7 @@ module Eureca {
          *     &lt;/body&gt;
          * &lt;/html&gt;
          * 
-         * 
+         * @see authenticate
          * @see connect
          * @see disconnect
          * @see isReady
@@ -81,7 +80,6 @@ module Eureca {
          * 
          */
     export class Client extends EObject {
-
 
         private _ready: boolean;
 
@@ -99,7 +97,7 @@ module Eureca {
          */
         public serverProxy: any = {};
 
-        public socket: any;
+        public socket: ISocket;
         public contract: string[];
         
         private stub: Stub;
@@ -147,7 +145,7 @@ module Eureca {
 
 
 
-            this.registerEvents(['ready', 'update', 'onConnect', 'onDisconnect', 'onError', 'onMessage', 'onConnectionLost', 'onConnectionRetry']);
+            this.registerEvents(['ready', 'update', 'onConnect', 'onDisconnect', 'onError', 'onMessage', 'onConnectionLost', 'onConnectionRetry', 'authResponse']);
 
 
             if (this.settings.autoConnect) this.connect();
@@ -189,6 +187,53 @@ module Eureca {
             return this._ready;
         }
 
+
+        /**
+         * Send authentication request to the server. <br />
+         * this can take an arbitrary number of arguments depending on what you defined in the server side <br />
+         * when the server receive an auth request it'll handle it and return null on auth success, or an error message if something goes wrong <br />
+         * you need to listed to auth result throught authResponse event
+         * ** Important ** : it's up to you to define the authenticationmethod in the server side
+         * @function Client#authenticate
+         *
+         * @example 
+         * var client = new Eureca.Client({..});
+         * //listen to auth response
+         * client.authResponse(function(result) {
+         *     if (result == null) { 
+         *         // ... Auth OK
+         *     }
+         *     else {
+         *         // ... Auth failed
+         *     }
+         * });
+         * 
+         * client.ready(function(){
+         * 
+         *      //send auth request
+         *      client.authenticate('your_auth_token');
+         * });
+         */
+        public authenticate(...args: any[]) {
+            if (!this._ready) 
+            {
+                return;
+            }
+
+            var authRequest = {};
+            authRequest[Eureca.Protocol.authReq] = args;
+            console.log('sending auth request', authRequest );
+            this.socket.send(authRequest);
+        }
+
+        /*
+         * If the authentication is used, this will tell you if you are already authenticated or not.
+         * @return {boolean} true mean that the client is authenticated
+         */
+        public isAuthenticated():boolean {
+            return this.socket.isAuthenticated();
+        }
+
         /**
          * connect client 
          * 
@@ -225,12 +270,20 @@ module Eureca {
                 _this.trigger('onMessage', data);
 
                 var jobj: any;
-                try {
-                    jobj = JSON.parse(data);
+
+                if (typeof data != 'object') {
+                    try {
+                        jobj = JSON.parse(data);
+                    }
+                    catch (ex) {
+                        jobj = {};
+                    }
                 }
-                catch (ex) {
-                    jobj = {};
+                else {
+                    jobj = data;
                 }
+
+                
 
                 if (jobj[Eureca.Protocol.contractId]) //should be first message
                 {
@@ -243,6 +296,12 @@ module Eureca {
                     var next = function () {
                         _this._ready = true;
                         if (update) {
+
+                            /**
+                            * ** Experimental ** Triggered when the server explicitly notify the client about remote functions change.<br />
+                            * you'll need this for example, if the server define some functions dynamically and need to make them available to clients.
+                            *
+                            */
                             _this.trigger('update', _this.serverProxy, _this.contract);
                         }
                         else {
@@ -265,6 +324,16 @@ module Eureca {
                     if (_this.settings.authenticate) _this.settings.authenticate(_this, next);
                     else next();
 
+                    return;
+                }
+                
+                //Handle auth response
+                if (jobj[Eureca.Protocol.authResp] !== undefined)
+                {
+                    _this.socket.eureca.authenticated = true;
+                    var callArgs = ['authResponse'].concat(jobj[Eureca.Protocol.authResp]);
+
+                    _this.trigger.apply(_this, callArgs);
                     return;
                 }
 
@@ -294,31 +363,33 @@ module Eureca {
 
 
             client.on('reconnecting', function (opts) {
+                /**
+                * triggered when the connection is lost and the client try to reconnect.
+                *
+                * @event Client#onConnectionRetry
+                */
                 _this.trigger('onConnectionRetry', opts);
-                /*
-                
-                _this.tries++;
-                if (_this.tries > _this.maxRetries) //handle 1002 and 1006 sockjs error codes
-                {
-                    _this.trigger('onConnectionLost');
-                    
-                    return;
-                }
-                //var utime = Math.pow(2, tries);
-                var utime = _this.tries;
-                setTimeout(function () {
-                    _this.connect();
-                }, utime * 1000);
-            */
+
             });
 
 
             client.on('close', function (e) {
+                /**
+                * triggered when the connection is lost after all retries to reestabilish it.
+                *
+                * @event Client#onDisconnect
+                */
                 _this.trigger('onDisconnect', client, e);
                 _this.trigger('onConnectionLost');
             });
 
             client.on('error', function (e) {
+                /**
+                * triggered if an error occure.
+                *
+                * @event Client#onError
+                * @property {String} error - the error message
+                */
                 _this.trigger('onError', e);
             });
 

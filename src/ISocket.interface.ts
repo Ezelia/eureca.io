@@ -12,6 +12,7 @@ module Eureca {
         // Instance member
         send(data: any);
         close();
+        isAuthenticated(): boolean;
 
         onopen(callback: (any?) => void );
         onmessage(callback: (any?) => void );

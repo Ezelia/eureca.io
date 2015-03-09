@@ -65,11 +65,15 @@
     <Content Include="build\js\engine.io.js" />
     <Content Include="build\js\socket.io.js" />
     <Content Include="build\js\sockjs-0.3.min.js" />
+    <Content Include="examples\5-async-returns\client.js" />
+    <Content Include="examples\5-async-returns\index.html" />
+    <Content Include="examples\5-async-returns\server.js" />
+    <Content Include="examples\6-authentication\client.js" />
+    <Content Include="examples\6-authentication\index.html" />
+    <Content Include="examples\6-authentication\server.js" />
     <Content Include="Gruntfile.js" />
     <Content Include="TODO.txt" />
     <None Include="src\transport\Sockjs.transport.ts" />
-    <Content Include="examples\1-websocket-only\client.js" />
-    <Content Include="examples\1-websocket-only\server.js" />
     <Content Include="examples\1-http-server\server.js" />
     <Content Include="examples\2-express-server\client.js" />
     <Content Include="examples\2-express-server\index.html" />
@@ -106,15 +110,9 @@
     <Content Include="src\transport\EngineIO.transport.min.js">
       <DependentUpon>EngineIO.transport.ts</DependentUpon>
     </Content>
-    <Content Include="examples\client1.js" />
     <Content Include="examples\1-http-server\client.js" />
     <Content Include="examples\1-http-server\index.html" />
     <Content Include="examples\2-express-server\server.js" />
-    <Content Include="examples\public\EurecaClient.class.js" />
-    <Content Include="examples\server-http.js" />
-    <Content Include="examples\server-ws-only.js" />
-    <Content Include="examples\server.js" />
-    <Content Include="examples\server1.js" />
     <Content Include="src\Client.class.ts" />
     <Content Include="src\Contract.class.ts" />
     <Content Include="src\Server.class.ts" />
@@ -122,10 +120,6 @@
     <Content Include="index.js" />
     <Content Include="src\js\socket.io.js" />
     <Content Include="src\js\sockjs-0.3.min.js" />
-    <Content Include="examples\client.js" />
-    <Content Include="examples\index.html" />
-    <Content Include="examples\rmi.js" />
-    <Content Include="examples\rmiclient.html" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="package.json" />
@@ -146,6 +140,9 @@
     <Content Include="examples\4-passport-express-authentication\views\index.ejs" />
     <Content Include="examples\4-passport-express-authentication\views\layout.ejs" />
     <Content Include="examples\4-passport-express-authentication\views\login.ejs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="examples\public\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" />
   <PropertyGroup>
