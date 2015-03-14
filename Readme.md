@@ -12,7 +12,7 @@ WebRTC support was added in version 0.6.4 : it's based on nodejs WebRTC stack [n
 
 Documentation
 =============
-The documentation work is in progress you can see it here http://eureca.io/doc/
+The [documentation](http://eureca.io/doc/) work is in progress.
 
 
 Setup 
