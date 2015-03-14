@@ -12,13 +12,16 @@ eurecaServer.attach(server);
 //functions under "exports" namespace will
 //be exposed to client side
 eurecaServer.exports.hello = function () {
+    
     console.log('Hello from client');
 }
 
 
 server.on('request', function (request, response) {
     var i;
+    
     if (request.method === 'GET') {
+        
         if (request.url.split('?')[0] === '/') {
             var filename = __dirname + '/index.html';
             fs.readFile(filename, function (err, data) {
@@ -29,6 +32,10 @@ server.on('request', function (request, response) {
             });
         }
     }
+
 });
 
+
+
+console.log('\033[96mlistening on localhost:8000 \033[39m');
 server.listen(8000);

@@ -19,4 +19,7 @@ app.get('/', function (req, res, next) {
     res.sendfile('index.html');
 });
 
+
+
+console.log('\033[96mlistening on localhost:8000 \033[39m');
 server.listen(8000);
