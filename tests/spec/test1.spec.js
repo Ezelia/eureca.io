@@ -228,9 +228,23 @@ describe("Client -> Server ", function () {
                 var itv = setInterval(function () {
                     if (tests.length > 0) return;
                     clearInterval(itv);
+                    eurecaServer.on('disconnect', function () {
+                        
+                        disconnected = true;
+
+
+                        console.log('server received disconnect message ... closing process in 1sec');
+                        server.close();
+
+                        setTimeout(function () {
+                            process.exit();
+                        }, 1000);
+                    });
+
+
                     client.disconnect();
-                    disconnected = true;
-                    server.close();
+                    
+
                 }, 100);
             });
         });

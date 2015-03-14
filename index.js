@@ -1,7 +1,6 @@
-
 exports.Client = require('./lib/EurecaClient.js').Eureca.Client;
 exports.Server = require('./lib/EurecaServer.js').Eureca.Server;
-
+exports.Transport = require('./lib/EurecaServer.js').Eureca.Transport;
 
 
 exports.EurecaServer = (function () {

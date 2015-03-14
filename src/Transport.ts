@@ -19,7 +19,20 @@ module Eureca {
         }
         static get (name)
         {
-            return this.transports[name];
+            if (name != 'webrtc')
+            {
+                console.log('* using primus:' + name);
+                //settings.transport =  'primus';
+                return this.transports['primus'];                
+            }
+            else
+            {
+                console.log('* using ' + name);   
+                return this.transports[name];
+            }
+
+            
         }
     }
 }
+

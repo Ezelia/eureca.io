@@ -4,6 +4,7 @@
 /// <reference path="../IServer.interface.ts" />
 /// <reference path="../ISocket.interface.ts" />
 
+
 /** @ignore */
 declare var __dirname;
 /** @ignore */
@@ -25,6 +26,8 @@ module Eureca.Transports.PrimusTransport {
         public remoteAddress;
         public eureca:any = {};
 
+        //public webRTCChannel:any;
+        //private wRTCPeer;
         constructor(public socket?: any) {
             super();
             this.request = socket.request;
@@ -71,11 +74,29 @@ module Eureca.Transports.PrimusTransport {
 
 
         }
+        //public setupWebRTC()
+        //{
+        //    if (this.wRTCPeer) return;
+        //    var _this = this;
+        //    this.wRTCPeer = new Eureca.Transports.WebRTC.Peer();
+        //    this.wRTCPeer.makeOffer(function(pc) {
+        //        var webRTCSignalReq = {};
+        //        webRTCSignalReq[Eureca.Protocol.signal] = pc.localDescription;
+        //        _this.send(webRTCSignalReq);
+        //    });
+        //}
+
         isAuthenticated(): boolean {
             return this.eureca.authenticated;
         }
-        send(data) {
+        send(data/*, webRTC=false*/) {
             
+            //if (webRTC && this.webRTCChannel)
+            //{
+            //    this.webRTCChannel.send(data);
+            //    return;
+            //}
+
             if (this.socket.send) {
                 
                 this.socket.send(data);
@@ -114,7 +135,9 @@ module Eureca.Transports.PrimusTransport {
     }
     export class Server implements IServer {
 
-        constructor(public primus: any) { }
+        constructor(public primus: any) {
+        }
+        //on client connect
         onconnect(callback: (Socket) => void) {
             this.primus.on('connection', function (psocket) {
                 var socket = new Socket(psocket)
@@ -122,6 +145,7 @@ module Eureca.Transports.PrimusTransport {
                 callback(socket);
             });
         }
+
     }
 
     var createServer = function (hook, options: any = {}) {

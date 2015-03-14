@@ -1,4 +1,5 @@
 /// <reference path="transport/Primus.transport.ts" />
+/// <reference path="transport/WebRTC.transport.ts" />
 /// <reference path="Transport.ts" />
 /// <reference path="Stub.ts" />
 /// <reference path="EObject.class.ts" />
@@ -84,7 +85,7 @@ module Eureca  {
         public debuglevel: number;
 
 
-        public allowedF: any[];
+        public allowedF: any;
         public clients: any;
 
         private transport: any;
@@ -93,6 +94,7 @@ module Eureca  {
 
         private useAuthentication:boolean;
 
+        public ioServer;
 
         
         /**
@@ -118,11 +120,9 @@ module Eureca  {
             this.stub = new Stub(settings);
 
             settings.transformer = settings.transport || 'engine.io';
-            settings.transport = 'primus';
+            this.transport = Transport.get(settings.transformer);
+            
 
-            console.log('* using primus:' + settings.transformer);
-
-            this.transport = Transport.get(settings.transport);
 
             this.contract = [];
             this.debuglevel = settings.debuglevel || 1;
@@ -143,12 +143,24 @@ module Eureca  {
 
             
 
-            this.registerEvents(['onConnect', 'onDisconnect', 'onMessage', 'onError']);
+            //this.registerEvents(['onConnect', 'onDisconnect', 'onMessage', 'onError']);
 
         }
 
 
 
+        public onConnect(callback: (any) => void) {
+            this.on('connect', callback);
+        }
+        public onDisconnect(callback: (any) => void) {
+            this.on('disconnect', callback);
+        }
+        public onMessage(callback: (any) => void) {
+            this.on('message', callback);
+        }
+        public onError(callback: (any) => void) {
+            this.on('error', callback);
+        }
 
 
 
@@ -175,13 +187,14 @@ module Eureca  {
             var conn = this.clients[id];
             
             if (conn === undefined) return false;
-            if (conn.client !== undefined) return conn.client;
-            conn.client = {};
+            if (conn.clientProxy !== undefined) return conn.clientProxy;
+
+            conn.clientProxy = {};
             //this.importClientFunction(conn.client, conn, this.allowedF);
-            this.stub.importRemoteFunction(conn.client, conn, this.allowedF);
+            this.stub.importRemoteFunction(conn.clientProxy, conn, conn.contract || this.allowedF);
 
             
-            return conn.client;
+            return conn.clientProxy;
         }
 
         /**
@@ -197,9 +210,11 @@ module Eureca  {
             var conn = this.clients[id];
             
             if (conn === undefined) return false;
-            conn.client = {};
+
+            conn.clientProxy = {};
+
             //this.importClientFunction(conn.client, conn, this.allowedF);
-            this.stub.importRemoteFunction(conn.client, conn, this.allowedF);
+            this.stub.importRemoteFunction(conn.clientProxy, conn, this.allowedF);
         }
 
         public getConnection (id) {
@@ -219,13 +234,14 @@ module Eureca  {
 
             
             this.scriptCache = '';
-            this.scriptCache += fs.readFileSync(__dirname + this.transport.script);
+            if (this.transport.script && this.transport.script != '')
+                this.scriptCache += fs.readFileSync(__dirname + this.transport.script);
             this.scriptCache += '\nvar _eureca_prefix = "' + prefix + '";\n';
             this.scriptCache += '\nvar _eureca_uri = "' + getUrl(request) + '";\n';
             this.scriptCache += '\nvar _eureca_host = "' + getUrl(request) + '";\n';
 
             //FIXME : override primus hardcoded pathname 
-            this.scriptCache += '\nPrimus.prototype.pathname = "/' + prefix+'";\n';
+            this.scriptCache += '\nif (typeof Primus != "undefined") Primus.prototype.pathname = "/' + prefix+'";\n';
             this.scriptCache += fs.readFileSync(__dirname + '/EurecaClient.js');
 
             response.writeHead(200);
@@ -252,7 +268,6 @@ module Eureca  {
         }
 
 
-
         private _handleServer(ioServer:IServer)
         {
             var _this = this;
@@ -268,32 +283,49 @@ module Eureca  {
 
                 //Send EURECA contract
 
-                _this.contract = Contract.ensureContract(_this.exports, _this.contract);
+                var sendContract = function () {
 
-                var sendObj = {};
-                sendObj[Eureca.Protocol.contractId] = _this.contract;
-                socket.send(JSON.stringify(sendObj));
+                    _this.contract = Contract.ensureContract(_this.exports, _this.contract);
+                    var sendObj = {};
+                    sendObj[Eureca.Protocol.contractId] = _this.contract;
+
+                    if (_this.allowedF == 'all')
+                        sendObj[Eureca.Protocol.signatureId] = socket.id;
+
+                    socket.send(JSON.stringify(sendObj));
+                }
+
+                if (!_this.useAuthentication) sendContract();
+
+
+                //attach socket client
+                socket.clientProxy = _this.getClient(socket.id);
+
 
 
                 /**
                 * Triggered each time a new client is connected
                 *
-                * @event Server#onConnect
+                * @event Server#connect
                 * @property {ISocket} socket - client socket.
                 */
-                _this.trigger('onConnect', socket);
+                _this.trigger('connect', socket);
 
 
                 socket.on('message', function (message) {
 
+
+                    
+
                     /**
                     * Triggered each time a new message is received from a client.
                     *
-                    * @event Server#onMessage
+                    * @event Server#message
                     * @property {String} message - the received message.
                     * @property {ISocket} socket - client socket.
                     */
-                    _this.trigger('onMessage', message, socket);
+                    _this.trigger('message', message, socket);
+                    
 
                     
 
@@ -309,7 +341,10 @@ module Eureca  {
                     }
 
 
-                    if (jobj === undefined) return;
+                    if (jobj === undefined) {
+                        _this.trigger('unhandledMessage', message, socket);
+                        return;
+                    }
 
                     //Handle authentication
                     if (jobj[Eureca.Protocol.authReq] !== undefined) {
@@ -322,6 +357,7 @@ module Eureca  {
 
                                 if (error == null) {
                                     socket.eureca.authenticated = true;
+                                    sendContract();
                                 }
 
                                 var authResponse = {};
@@ -342,22 +378,33 @@ module Eureca  {
                         return;
                     }
 
+                    /** Experimental : dynamic client contract*/
+                    //if (jobj[Eureca.Protocol.contractId] !== undefined) {
+                    //    socket.contract = jobj[Eureca.Protocol.contractId];
+
+                    //    return;
+                    //}
+                    /*****************************************/
+
+
                     //handle remote call
                     if (jobj[Eureca.Protocol.functionId] !== undefined) {
+                        if (socket.context == undefined) {
+                            var returnFunc = function (result) {
+                                var retObj = {};
+                                retObj[Eureca.Protocol.signatureId] = this.retId;
+                                retObj[Eureca.Protocol.resultId] = result;
+                                this.connection.send(JSON.stringify(retObj));
+                            }
 
-                        var returnFunc = function (result) {
-                            var retObj = {};
-                            retObj[Eureca.Protocol.signatureId] = this.retId;
-                            retObj[Eureca.Protocol.resultId] = result;
-                            this.connection.send(JSON.stringify(retObj));
+                            socket.context = { user: { clientId: socket.id }, connection: socket, socket: socket, clientProxy:socket.clientProxy, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
+
                         }
-
-                        var context: any = { user: { clientId: socket.id }, connection: socket, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
-
+                        socket.context.retId = jobj[Eureca.Protocol.signatureId];
 
                         //if (!_this.settings.preInvoke || jobj[Eureca.Protocol.functionId] == 'authenticate' || (typeof _this.settings.preInvoke == 'function' && _this.settings.preInvoke.apply(context)))
                         
-                        _this.stub.invoke(context, _this, jobj, socket);
+                        _this.stub.invoke(socket.context, _this, jobj, socket);
 
 
                         return;
@@ -369,6 +416,9 @@ module Eureca  {
                         _this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId]);
                         return;
                     }
+
+
+                    _this.trigger('unhandledMessage', message, socket);
                 });
 
                 socket.on('error', function (e) {
@@ -377,11 +427,11 @@ module Eureca  {
                     /**
                     * triggered if an error occure.
                     *
-                    * @event Server#onError
+                    * @event Server#error
                     * @property {String} error - the error message
                     * @property {ISocket} socket - client socket.
                     */
-                    _this.trigger('onError', e, socket);
+                    _this.trigger('error', e, socket);
                 });
 
 
@@ -390,11 +440,14 @@ module Eureca  {
                     /**
                     * triggered when the client is disconneced.
                     *
-                    * @event Server#onDisconnect
+                    * @event Server#disconnect
                     * @property {ISocket} socket - client socket.
                     */
-                    _this.trigger('onDisconnect', socket);
+                    //console.log('disconnected deletting ', _this.clients);
+                    _this.trigger('disconnect', socket);
                     delete _this.clients[socket.id];
+
+                    //console.log('disconnected ', _this.clients);
                     //console.log('i', '#of clients changed ', EURECA.clients.length, );
 
                 });
@@ -439,14 +492,14 @@ module Eureca  {
 
             //initialising server
             //var ioServer = io.attach(server, { path: '/'+_prefix });
-            var ioServer = this.transport.createServer(server, { prefix: _prefix, transformer:_transformer, parser:_parser });
+            this.ioServer = this.transport.createServer(server, { prefix: _prefix, transformer:_transformer, parser:_parser });
             //console.log('Primus ? ', ioServer.primus);
 
             //var scriptLib = (typeof ioServer.primus == 'function') ? ioServer.primus.library() : null;
 
             var _this = this;
 
-            this._handleServer(ioServer);
+            this._handleServer(this.ioServer);
 
 
 

@@ -1,7 +1,9 @@
 /// <reference path="transport/Primus.transport.ts" />
+/// <reference path="transport/WebRTC.transport.ts" />
 /// <reference path="Stub.ts" />
 /// <reference path="EObject.class.ts" />
 /// <reference path="Util.class.ts" />
+/// <reference path="Contract.class.ts" />
 
 /** @ignore */
 declare var require: any;
@@ -75,6 +77,7 @@ module Eureca {
          * @see authenticate
          * @see connect
          * @see disconnect
+         * @see send
          * @see isReady
          * 
          * 
@@ -82,6 +85,7 @@ module Eureca {
     export class Client extends EObject {
 
         private _ready: boolean;
+        private _useWebRTC: boolean;
 
 
         public maxRetries: number;
@@ -96,6 +100,7 @@ module Eureca {
          * 
          */
         public serverProxy: any = {};
+        
 
         public socket: ISocket;
         public contract: string[];
@@ -128,11 +133,11 @@ module Eureca {
 
             this.stub = new Stub(settings);
 
-
+            //needed by primus
             settings.transformer = settings.transport || 'engine.io';
-            settings.transport = 'primus';
-            console.log('* using primus:' + settings.transformer);
-            this.transport = Transport.get(settings.transport);
+            this.transport = Transport.get(settings.transformer);
+            
+
 
             var _this = this;
             this.exports = {};
@@ -145,7 +150,7 @@ module Eureca {
 
 
 
-            this.registerEvents(['ready', 'update', 'onConnect', 'onDisconnect', 'onError', 'onMessage', 'onConnectionLost', 'onConnectionRetry', 'authResponse']);
+            //this.registerEvents(['ready', 'update', 'onConnect', 'onDisconnect', 'onError', 'onMessage', 'onConnectionLost', 'onConnectionRetry', 'authResponse']);
 
 
             if (this.settings.autoConnect) this.connect();
@@ -153,6 +158,7 @@ module Eureca {
             
 
         }
+
 
 
         /**
@@ -188,6 +194,18 @@ module Eureca {
         }
 
 
+
+        /**
+         * Send user data to the server
+         * 
+         * @function Client#send
+         * @param {any} rawData - data to send (must be serializable type)
+         */
+        public send(rawData:any) {
+            return this.socket.send(rawData);
+        }
+
+
         /**
          * Send authentication request to the server. <br />
          * this can take an arbitrary number of arguments depending on what you defined in the server side <br />
@@ -215,16 +233,19 @@ module Eureca {
          * });
          */
         public authenticate(...args: any[]) {
-            if (!this._ready) 
-            {
-                return;
-            }
+            //if (!this._ready) 
+            //{
+            //    return;
+            //}
 
             var authRequest = {};
             authRequest[Eureca.Protocol.authReq] = args;
             console.log('sending auth request', authRequest );
             this.socket.send(authRequest);
         }
+
+
+
 
         /*
          * If the authentication is used, this will tell you if you are already authenticated or not.
@@ -233,6 +254,14 @@ module Eureca {
         public isAuthenticated():boolean {
             return this.socket.isAuthenticated();
         }
+
+
+
+        private setupWebRTC() {
+
+            //this.stub.importRemoteFunction(_this.webRTCProxy, _this.socket, jobj[Eureca.Protocol.contractId]);
+        }
+
 
         /**
          * connect client 
@@ -243,7 +272,7 @@ module Eureca {
          */
         public connect() {
             
-            var _this = this;
+            //var _this = this;
             var prefix = '';
             prefix += this.settings.prefix || _eureca_prefix;
 
@@ -251,23 +280,41 @@ module Eureca {
             var uri = this.settings.uri || (prefix ? _eureca_host + '/'+ prefix : (_eureca_uri || undefined));
 
             console.log(uri, prefix);
-            _this._ready = false;
+            this._ready = false;
             var _transformer = this.settings.transformer;
             var _parser = this.settings.parser;
 
             //_this.socket = EurecaSocket(uri, { path: prefix });
-            var client = this.transport.createClient(uri, { prefix: prefix, transformer: _transformer, parser: _parser, retries: this.maxRetries, minDelay:100 });
-            _this.socket = client;
+            var client = this.transport.createClient(uri, {
+                prefix: prefix,
+                transformer: _transformer,
+                parser: _parser,
+                retries: this.maxRetries,
+                minDelay: 100,
+
+                //WebRTC stuff
+                reliable: this.settings.reliable,
+                maxRetransmits: this.settings.maxRetransmits,
+                ordered: this.settings.ordered
+            });
+            this.socket = client;
+
+            this._handleClient(client, this.serverProxy);
+
+        }
 
 
-            client.on('open', function () {                
-                _this.trigger('onConnect', client);
-                _this.tries = 0;                
+        private _handleClient(client, proxy) {
+            var _this = this;
+
+            client.on('open', function () {
+                _this.trigger('connect', client);
+                _this.tries = 0;
             });
 
 
             client.on('message', function (data) {
-                _this.trigger('onMessage', data);
+                _this.trigger('message', data);
 
                 var jobj: any;
 
@@ -283,55 +330,71 @@ module Eureca {
                     jobj = data;
                 }
 
-                
+                if (typeof jobj != 'object') {
+                    _this.trigger('unhandledMessage', data);
+                    return;
+                }
+
 
                 if (jobj[Eureca.Protocol.contractId]) //should be first message
                 {
                     var update = _this.contract && _this.contract.length > 0;
 
                     _this.contract = jobj[Eureca.Protocol.contractId];
-                    _this.stub.importRemoteFunction(_this.serverProxy, _this.socket, jobj[Eureca.Protocol.contractId]);
 
 
-                    var next = function () {
-                        _this._ready = true;
-                        if (update) {
+                    /** Experimental : dynamic client contract*/
+                    //if (jobj[Protocol.signatureId]) {
 
-                            /**
-                            * ** Experimental ** Triggered when the server explicitly notify the client about remote functions change.<br />
-                            * you'll need this for example, if the server define some functions dynamically and need to make them available to clients.
-                            *
-                            */
-                            _this.trigger('update', _this.serverProxy, _this.contract);
-                        }
-                        else {
+                    //    var contract = [];
+                    //    contract = Contract.ensureContract(_this.exports);    
 
-                            /**
-                            * Triggered when the connection is estabilished and server remote functions available to the client.
-                            *
-                            * @event Client#ready
-                            * @property {Proxy} serverProxy - server proxy object.
-                            * @example
-                            * client.ready(function (serverProxy) {
-                            *    serverProxy.hello();    
-                            * });                           
-                            * 
-                            */
-                            _this.trigger('ready', _this.serverProxy, _this.contract);
-                        }
+                    //    var contractResp = {};                    
+                    //    contractResp[Protocol.contractId] = contract;
+                    //    contractResp[Protocol.signatureId] = jobj[Protocol.signatureId];
+
+                    //    _this.send(contractResp);
+
+                    //    _this.contract = contract;
+                    //}
+                    /*****************************************************/
+
+
+                    _this.stub.importRemoteFunction(proxy, client, jobj[Eureca.Protocol.contractId]);
+
+
+                    //var next = function () {
+                    _this._ready = true;
+                    if (update) {
+
+                        /**
+                        * ** Experimental ** Triggered when the server explicitly notify the client about remote functions change.<br />
+                        * you'll need this for example, if the server define some functions dynamically and need to make them available to clients.
+                        *
+                        */
+                        _this.trigger('update', proxy, _this.contract);
                     }
+                    else {
 
-                    if (_this.settings.authenticate) _this.settings.authenticate(_this, next);
-                    else next();
+
+                        _this.trigger('ready', proxy, _this.contract);
+                    }
+                    //}
+
+                    //if (_this.settings.authenticate) _this.settings.authenticate(_this, next);
+                    //else next();
+
+
 
                     return;
                 }
-                
+
                 //Handle auth response
-                if (jobj[Eureca.Protocol.authResp] !== undefined)
-                {
-                    _this.socket.eureca.authenticated = true;
+                if (jobj[Eureca.Protocol.authResp] !== undefined) {
+                    client.eureca.authenticated = true;
                     var callArgs = ['authResponse'].concat(jobj[Eureca.Protocol.authResp]);
+
+
 
                     _this.trigger.apply(_this, callArgs);
                     return;
@@ -341,16 +404,20 @@ module Eureca {
                 if (jobj[Eureca.Protocol.functionId] !== undefined) //server invoking client
                 {
 
-                    var returnFunc = function (result) {
-                        var retObj = {};
-                        retObj[Eureca.Protocol.signatureId] = this.retId;
-                        retObj[Eureca.Protocol.resultId] = result;
-                        this.connection.send(JSON.stringify(retObj));
+                    if (client.context == undefined) {
+
+                        var returnFunc = function (result) {
+                            var retObj = {};
+                            retObj[Eureca.Protocol.signatureId] = this.retId;
+                            retObj[Eureca.Protocol.resultId] = result;
+                            this.connection.send(JSON.stringify(retObj));
+                        }
+
+                        client.context = { user: { clientId: client.id }, connection: client, socket: client, serverProxy: client.serverProxy, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
                     }
+                    client.context.retId = jobj[Eureca.Protocol.signatureId];
 
-                    var context: any = { user: { clientId: _this.socket.id }, connection: _this.socket, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
-
-                    _this.stub.invoke(context, _this, jobj, _this.socket);
+                    _this.stub.invoke(client.context, _this, jobj, client);
                     return;
                 }
 
@@ -359,43 +426,227 @@ module Eureca {
                     _this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId]);
                     return;
                 }
+
+                _this.trigger('unhandledMessage', data);
             });
 
 
             client.on('reconnecting', function (opts) {
-                /**
-                * triggered when the connection is lost and the client try to reconnect.
-                *
-                * @event Client#onConnectionRetry
-                */
-                _this.trigger('onConnectionRetry', opts);
+
+                _this.trigger('connectionRetry', opts);
 
             });
 
 
             client.on('close', function (e) {
-                /**
-                * triggered when the connection is lost after all retries to reestabilish it.
-                *
-                * @event Client#onDisconnect
-                */
-                _this.trigger('onDisconnect', client, e);
-                _this.trigger('onConnectionLost');
+
+                _this.trigger('disconnect', client, e);
+                _this.trigger('connectionLost');
             });
 
             client.on('error', function (e) {
-                /**
-                * triggered if an error occure.
-                *
-                * @event Client#onError
-                * @property {String} error - the error message
-                */
-                _this.trigger('onError', e);
+
+                _this.trigger('error', e);
             });
 
 
         }
 
+        //#region ==[ Events bindings ]===================
+
+        /**
+         * Bind a callback to 'ready' event @see {@link Client#event:ready|Client ready event}
+         * >**Note :** you can also use Client.on('ready', callback) to bind ready event
+         * 
+         * @function Client#ready
+         * 
+         */
+        public ready(callback: (any) => void) {
+            /**
+            * Triggered when the connection is estabilished and server remote functions available to the client.
+            *
+            * @event Client#ready
+            * @property {Proxy} serverProxy - server proxy object.
+            * @example
+            * client.ready(function (serverProxy) {
+            *    serverProxy.hello();    
+            * });                           
+            * 
+            */
+            this.on('ready', callback);
+        }
+
+
+
+
+
+
+
+        /**
+         * Bind a callback to 'update' event @see {@link Client#event:update|Client update event}
+         * >**Note :** you can also use Client.on('update', callback) to bind update event
+         * 
+         * @function Client#update
+         * 
+         */
+        public update(callback: (any) => void) {
+            this.on('update', callback);
+        }
+
+
+        /**
+         * Bind a callback to 'connect' event
+         * >**Note :** you can also use Client.on('connect', callback) to bind connect event
+         * 
+         * @function Client#onConnect
+         * 
+         */
+        public onConnect(callback: (any) => void) {
+            this.on('connect', callback);
+        }
+
+
+        /**
+         * Bind a callback to 'disconnect' event @see {@link Client#event:disconnect|Client disconnect event}
+         * >**Note :** you can also use Client.on('disconnect', callback) to bind disconnect event
+         * 
+         * @function Client#donDisconnect
+         * 
+         */
+        public onDisconnect(callback: (any) => void) {
+
+
+            /**
+            * triggered when the connection is lost after all retries to reestabilish it.
+            *
+            * @event Client#disconnect
+            */
+            this.on('disconnect', callback);
+        }
+
+
+        /**
+         * Bind a callback to 'message' event @see {@link Client#event:message|Client message event}
+         * >**Note :** you can also use Client.on('message', callback) to bind message event
+         * 
+         * @function Client#onMessage
+         * 
+         */
+        public onMessage(callback: (any) => void) {
+
+
+            /**
+            * Triggered when the client receive a message from the server.
+            * This event can be used to intercept exchanged messages betweens client and server, if you need to access low level network messages
+            * 
+            * @event Client#message
+            * 
+            * 
+            */
+            this.on('message', callback);
+        }
+
+
+
+        /**
+         * Bind a callback to 'unhandledMessage' event @see {@link Client#event:unhandledMessage|Client unhandledMessage event}
+         * >**Note :** you can also use Client.on('message', callback) to bind unhandledMessage event
+         * 
+         * @function Client#onUnhandledMessage
+         * 
+         */
+        public onUnhandledMessage(callback: (any) => void) {
+
+            /**
+            * Triggered when the client receive a message from the server and is not able to handle it.
+            * this mean that the message is not an internal eureca.io message.<br />
+            * if for some reason you need to exchange send/receive raw or custom data, listen to this event which in countrary to {@link Client#event:message|message event} will only trigger for non-eureca messages.
+            * 
+            * @event Client#unhandledMessage
+            * 
+            * 
+            */
+            this.on('unhandledMessage', callback);
+
+        }
+
+
+
+        /**
+         * Bind a callback to 'error' event @see {@link Client#event:error|Client error event}
+         * >**Note :** you can also use Client.on('error', callback) to bind error event
+         * 
+         * @function Client#onError
+         * 
+         */
+        public onError(callback: (any) => void) {
+
+
+            /**
+            * triggered if an error occure.
+            *
+            * @event Client#error
+            * @property {String} error - the error message
+            */
+            this.on('error', callback);
+        }
+
+
+
+        /**
+         * Bind a callback to 'connectionLost' event 
+         * >**Note :** you can also use Client.on('connectionLost', callback) to bind connectionLost event
+         * 
+         * @function Client#onConnectionLost
+         * 
+         */
+        public onConnectionLost(callback: (any) => void) {
+            this.on('connectionLost', callback);
+        }
+
+
+
+        /**
+         * Bind a callback to 'connectionRetry' event 
+         * >**Note :** you can also use Client.on('connectionRetry', callback) to bind connectionRetry event
+         * 
+         * @function Client#onConnectionRetry
+         * 
+         */
+        public onConnectionRetry(callback: (any) => void) {
+            /**
+            * triggered when the connection is lost and the client try to reconnect.
+            *
+            * @event Client#connectionRetry
+            */
+            this.on('connectionRetry', callback);
+        }
+
+
+
+        /**
+         * Bind a callback to 'authResponse' event @see {@link Client#event:authResponse|Client authResponse event}
+         * >**Note :** you can also use Client.on('authResponse', callback) to bind authResponse event
+         * 
+         * @function Client#onAuthResponse
+         * 
+         */
+        public onAuthResponse(callback: (any) => void) {
+
+
+            /**
+            * Triggered when the client receive authentication response from the server.
+            * The server should return a null response on authentication success.
+            * 
+            * @event Client#authResponse
+            * 
+            * 
+            */
+            this.on('authResponse', callback);
+        }
+
+
+        //#endregion
 
     }
 

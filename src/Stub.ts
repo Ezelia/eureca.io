@@ -26,6 +26,9 @@ module Eureca {
             if (proxyObj !== undefined) proxyObj.callback(result);
         }
 
+        /**
+         * 
+         */
         importRemoteFunction(handle, socket, functions) {
             //TODO : improve this using cache
 
