@@ -7,6 +7,8 @@ it allow you to call server side function from a browser or nodejs client and vi
 
 please visit the project web page for more code samples http://eureca.io/
 
+WebRTC support was added in version 0.6.4 : it's based on nodejs WebRTC stack [node-webrtc](https://github.com/js-platform/node-webrtc).
+
 
 Documentation
 =============
@@ -95,10 +97,9 @@ you should see 'Hello from client' on the server side.
 
 
 TODO / Roadmap
-==============
- * Documentation
+============== 
  * More examples/tutorials
- * Add webrtc datachannel support using [node-webrtc](https://github.com/js-platform/node-webrtc) in the server side.
+
 
 
 Licence

@@ -26,8 +26,8 @@ eurecaServer.exports.asyncServerHello = function () {
 		context.return('Async hello from server');	
 	}, 2000);
 
-    var conn = this.connection;
-    var client = eurecaServer.getClient(conn.id);
+    
+	var client = this.clientProxy;
     
     client.asyncClientHello()		
 		.onReady(function(r) {

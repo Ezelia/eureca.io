@@ -17,7 +17,7 @@ eurecaServer.onMessage(function (msg) {
 eurecaServer.onConnect(function (conn) {
     
     console.log('new Client');
-    var client = eurecaServer.getClient(conn.id);
+    var client = conn.clientProxy;
     
     client.ns.hello();
     client.ns2.ns3.h2();
