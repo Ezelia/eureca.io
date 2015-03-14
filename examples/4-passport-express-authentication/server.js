@@ -155,21 +155,14 @@ var Eureca = require('../../');
 //var EurecaServer = require('eureca.io').EurecaServer;
 var eurecaServer = new Eureca.Server({
     transport: 'engine.io',
-    authenticate: function (authToken) {
+    authenticate: function (authToken, next) {
         console.log('auth called');
         for (var h in sessionHash) {
             if (sessionHash[h] == authToken) {
-                var client = eurecaServer.getClient(this.connection.id);
-                client.authenticated = true;
-                return true;
+                next();
             }
         }
-        return false;
-    },
-    preInvoke: function () {
-        var client = eurecaServer.getClient(this.connection.id);
-        console.log('pre invoking', client);
-        return (client.authenticated === true);
+        next('Auth Failed');
     }
 });
 
