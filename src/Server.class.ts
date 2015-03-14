@@ -505,14 +505,17 @@ module Eureca  {
 
             //install on express
             //sockjs_server.installHandlers(server, {prefix:_prefix});            
-            if (app.get)  //TODO : better way to detect express
+            if (app.get && app.post)  //TODO : better way to detect express
             {
+
+                
                 app.get(_clientUrl, function (request, response) {
                     _this.sendScript(request, response, _prefix);
                 });
             }
             else  //Fallback to nodejs
             {
+                
                 app.on('request', function (request, response) {
                     if (request.method === 'GET') {
                         if (request.url.split('?')[0] === _clientUrl) {
@@ -520,29 +523,32 @@ module Eureca  {
                         }
                     }
                 });
+
+
             }
 
-            //Workaround : nodejs 0.10.0 have a strange behaviour making remoteAddress unavailable when connecting from a nodejs client
-            server.on('request', function (req, res) {                
-                if (!req.query) return;
+            //console.log('>>>>>>>>>>>> ', app.get);
 
-                var id = req.query.sid;
-                var client = _this.clients[req.query.sid];
-                
-                if (client)
-                {                 
-                       
-                    client.eureca = client.eureca || {};                    
-                    client.eureca.remoteAddress = client.eureca.remoteAddress || req.socket.remoteAddress;
-                    client.eureca.remotePort = client.eureca.remotePort || req.socket.remotePort;                    
+
+            //Workaround : nodejs 0.10.0 have a strange behaviour making remoteAddress unavailable when connecting from a nodejs client
+            server.on('request', function (request, response) {
+                if (!request.query) return;
+
+                var id = request.query.sid;
+                var client = _this.clients[request.query.sid];
+
+                if (client) {
+
+                    client.eureca = client.eureca || {};
+                    client.eureca.remoteAddress = client.eureca.remoteAddress || request.socket.remoteAddress;
+                    client.eureca.remotePort = client.eureca.remotePort || request.socket.remotePort;
                 }
                 //req.eureca = {
                 //    remoteAddress: req.socket.remoteAddress,
                 //    remotePort: req.socket.remotePort
                 //}
-                
-            });
-            
+
+            });            
         }
     }
 
