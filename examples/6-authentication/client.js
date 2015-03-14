@@ -28,4 +28,3 @@ client.on('authResponse',function (error) {
     }
 
 });
-
