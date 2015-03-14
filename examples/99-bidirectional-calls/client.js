@@ -5,14 +5,14 @@ var client = new Eureca.Client({ uri: 'http://localhost:8000/', prefix: 'eureca.
 client.ready(function (proxy) {
 
     //console.log('> proxy = ', proxy);
-    client.foo().onReady(function (r) {
+    proxy.foo().onReady(function (r) {
         console.log('>', r);
     });
 
-    client.ns.play();
+    proxy.ns.play();
 
     setTimeout(function () {
-        client.ns.stop();
+        proxy.ns.stop();
     }, 1000);
 });
 client.onMessage(function (msg) {

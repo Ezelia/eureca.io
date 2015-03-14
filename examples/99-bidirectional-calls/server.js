@@ -3,7 +3,7 @@
 var express = require('express')
   , app = express()
   , server = require('http').createServer(app)
-  //, io = require('engine.io').attach(server, { path: '/eureca.io' });
+  
 
 var Eureca = require('../../');
 
@@ -61,7 +61,7 @@ eurecaServer.exports.add = function (a, b) {
 
 
 app.get('/', function (req, res, next) {
-    res.sendfile('index.html');
+    res.sendfile(__dirname+'/index.html');
 });
 
 

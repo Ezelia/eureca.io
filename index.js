@@ -12,7 +12,7 @@ exports.EurecaServer = (function () {
     F.prototype = exports.Server.prototype;
 
     return function () {
-        console.log("/!\\  EurecaServer syntax is deprecated please see @");
+        console.log("/!\\  EurecaServer syntax is deprecated please see http://eureca.io/doc/tutorial-A00-Deprecations.html");
         return new F(arguments);
     }
 })();
@@ -26,7 +26,7 @@ exports.EurecaClient = (function () {
     F.prototype = exports.Client.prototype;
 
     return function () {
-        console.log("/!\\  EurecaClient syntax is deprecated please see @");
+        console.log("/!\\  EurecaClient syntax is deprecated please see http://eureca.io/doc/tutorial-A00-Deprecations.html");
         return new F(arguments);
     }
 })();

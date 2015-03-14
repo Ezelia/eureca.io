@@ -49,7 +49,7 @@
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
     <TypeScriptIncludeComments>true</TypeScriptIncludeComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
   </PropertyGroup>
@@ -59,12 +59,9 @@
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="build\EurecaClient.js" />
     <CodeAnalysisDictionary Include="src\EObject.class.ts" />
-    <Content Include="build\EurecaServer.js" />
-    <Content Include="build\js\engine.io.js" />
-    <Content Include="build\js\socket.io.js" />
-    <Content Include="build\js\sockjs-0.3.min.js" />
+    <Content Include="examples\0-helloworld\index.html" />
+    <Content Include="examples\0-helloworld\server.js" />
     <Content Include="examples\5-async-returns\client.js" />
     <Content Include="examples\5-async-returns\index.html" />
     <Content Include="examples\5-async-returns\server.js" />
@@ -73,7 +70,6 @@
     <Content Include="examples\6-authentication\server.js" />
     <Content Include="Gruntfile.js" />
     <Content Include="TODO.txt" />
-    <None Include="src\transport\Sockjs.transport.ts" />
     <Content Include="examples\1-http-server\server.js" />
     <Content Include="examples\2-express-server\client.js" />
     <Content Include="examples\2-express-server\index.html" />
@@ -87,53 +83,26 @@
     <Content Include="tsdoc.json" />
     <TypeScriptCompile Include="src\transport\Primus.transport.ts" />
     <TypeScriptCompile Include="src\Protocol.config.ts" />
-    <Content Include="src\transport\Primus.transport.js">
-      <DependentUpon>Primus.transport.ts</DependentUpon>
-    </Content>
-    <Content Include="src\transport\Sockjs.transport.js">
-      <DependentUpon>Sockjs.transport.ts</DependentUpon>
-    </Content>
-    <Content Include="src\transport\Sockjs.transport.min.js">
-      <DependentUpon>Sockjs.transport.ts</DependentUpon>
-    </Content>
     <Content Include="tests\spec\index.html" />
     <Content Include="tests\spec\test1.spec.js" />
     <TypeScriptCompile Include="src\Stub.ts" />
+    <TypeScriptCompile Include="src\transport\WebRTC.transport.ts" />
+    <TypeScriptCompile Include="src\transport\WebRTCPeer.ts" />
     <TypeScriptCompile Include="src\Util.class.ts" />
     <TypeScriptCompile Include="src\ISocket.interface.ts" />
     <TypeScriptCompile Include="src\IServer.interface.ts" />
     <TypeScriptCompile Include="src\Transport.ts" />
-    <None Include="src\transport\EngineIO.transport.ts" />
-    <Content Include="src\transport\EngineIO.transport.js">
-      <DependentUpon>EngineIO.transport.ts</DependentUpon>
-    </Content>
-    <Content Include="src\transport\EngineIO.transport.min.js">
-      <DependentUpon>EngineIO.transport.ts</DependentUpon>
-    </Content>
     <Content Include="examples\1-http-server\client.js" />
     <Content Include="examples\1-http-server\index.html" />
     <Content Include="examples\2-express-server\server.js" />
     <Content Include="src\Client.class.ts" />
     <Content Include="src\Contract.class.ts" />
     <Content Include="src\Server.class.ts" />
-    <Content Include="src\js\engine.io.js" />
     <Content Include="index.js" />
-    <Content Include="src\js\socket.io.js" />
-    <Content Include="src\js\sockjs-0.3.min.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="package.json" />
     <Content Include="Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="src\transport\Sockjs.transport.js.map">
-      <DependentUpon>Sockjs.transport.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="src\transport\EngineIO.transport.js.map">
-      <DependentUpon>EngineIO.transport.ts</DependentUpon>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="examples\4-passport-express-authentication\views\account.ejs" />
@@ -144,6 +113,9 @@
   <ItemGroup>
     <Folder Include="examples\public\" />
   </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
+  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" />
   <PropertyGroup>
     <PostBuildEvent>tsc --out  $(ProjectDir)lib\EurecaClient.js $(ProjectDir)src\Client.class.ts
