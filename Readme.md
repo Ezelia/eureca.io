@@ -79,17 +79,15 @@ please check node_modules/eureca.io/examples/ for some example codes
 open a terminal window and type and cd to node_modules/eureca.io/examples/1-http-server/
 
 ```
-     node --harmony-proxies server.js
+     node server.js
 ```
 
-note the usage of --harmony-proxies command line argument, this switch enables harmony proxies witch is used by eureca.io library (for more information about harmony proxies see this link http://wiki.ecmascript.org/doku.php?id=harmony:proxies)
-if you don't use --harmony-proxies, eureca will still work using a workaround but this is not recommanded. 
 
 now you can either open a browser window on http://localhost:8000/ or open another terminal window in the same directory and call
 open a terminal window and type and cd to node_modules/eureca.io/examples/1-http-server/
 
 ```
-     node --harmony-proxies client.js
+     node client.js
 ```
 
 you should see 'Hello from client' on the server side.

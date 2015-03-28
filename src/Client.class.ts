@@ -423,7 +423,7 @@ module Eureca {
 
                 if (jobj[Eureca.Protocol.signatureId] !== undefined) //invoke result
                 {
-                    _this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId]);
+                    _this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId], jobj[Eureca.Protocol.errorId]);
                     return;
                 }
 

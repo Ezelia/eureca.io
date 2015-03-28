@@ -19,11 +19,22 @@ module Eureca {
         registerCallBack(sig, cb) {
             this.callbacks[sig] = cb;
         }
-        doCallBack(sig, result) {
+
+        doCallBack(sig, result, error) {
             if (!sig) return;
             var proxyObj = this.callbacks[sig];
             delete this.callbacks[sig];
-            if (proxyObj !== undefined) proxyObj.callback(result);
+
+            if (proxyObj !== undefined) {
+                proxyObj.status = 1;
+                proxyObj.result = result;
+                proxyObj.error = error;
+
+                if (error == null)
+                    proxyObj.callback(result);
+                else
+                    proxyObj.errorCallback(error);
+            }
         }
 
         /**
@@ -48,10 +59,37 @@ module Eureca {
 
                     //TODO : do we need to re generate proxy function if it's already declared ?
                     proxy[_fname] = function () {
-                        //TODO : register signature ID to be able to trigger result later.
+                        
                         var proxyObj = {
-                            /* TODO : save uid/sig here*/
+                            status: 0,
+                            result: null,
+                            error: null,
+                            sig:null,
                             callback: function () { },
+                            errorCallback: function () { },
+
+                            //TODO : use the standardized promise syntax instead of onReady
+                            then: function (fn, errorFn) {
+                                if (this.status != 0) {
+
+                                    if (this.error == null)
+                                        fn(this.result);
+                                    else
+                                        errorFn(this.error);
+
+                                    return;
+                                }
+
+                                if (typeof fn == 'function') {
+                                    this.callback = fn;
+                                }
+
+                                if (typeof errorFn == 'function') {
+                                    this.errorCallback = errorFn;
+                                }
+
+                            }
+                        /*
                             onReady: function (fn)
                             {
                                 if (typeof fn == 'function')
@@ -59,13 +97,17 @@ module Eureca {
                                     this.callback = fn;
                                 }
                             }
+                        */
                         }
+                        proxyObj['onReady'] = proxyObj.then;
 
                         var RMIObj: any = {};
 
                         
                         var argsArray = Array.prototype.slice.call(arguments, 0);
                         var uid = Eureca.Util.randomStr();
+                        proxyObj.sig = uid;
+
 
                         _this.registerCallBack(uid, proxyObj);
 
@@ -83,6 +125,15 @@ module Eureca {
 
         }
 
+
+        private sendResult(socket, sig, result, error) {
+            if (!socket) return;
+            var retObj = {};
+            retObj[Protocol.signatureId] = sig;
+            retObj[Protocol.resultId] = result;
+            retObj[Protocol.errorId] = error;
+            socket.send(JSON.stringify(retObj));
+        }
         invoke(context, handle, obj, socket?) {
 
 
@@ -92,8 +143,14 @@ module Eureca {
             /* browing namespace */
             var ftokens = fname.split('.');
             var func = handle.exports;
-            for (var i = 0; i < ftokens.length; i++)
+            for (var i = 0; i < ftokens.length; i++) {
+                if (!func) {
+                    console.log('Invoke error', obj[Protocol.functionId] + ' is not a function', '');
+                    this.sendResult(socket, obj[Protocol.signatureId], null, 'Invoke error : ' + obj[Protocol.functionId] + ' is not a function');
+                    return;
+                }
                 func = func[ftokens[i]];
+            }
             /* ***************** */
 
 
@@ -101,6 +158,7 @@ module Eureca {
             if (typeof func != 'function') {
                 //socket.send('Invoke error');
                 console.log('Invoke error', obj[Protocol.functionId] + ' is not a function', '');
+                this.sendResult(socket, obj[Protocol.signatureId], null, 'Invoke error : ' + obj[Protocol.functionId] + ' is not a function');
                 return;
             }
             //obj.a.push(conn); //add connection object to arguments
@@ -115,11 +173,14 @@ module Eureca {
 
                 if (socket && obj[Protocol.signatureId] && !context.async) {
 
+                    this.sendResult(socket, obj[Protocol.signatureId], result, null);
+                    /*
                     var retObj = {};
                     retObj[Protocol.signatureId] = obj[Protocol.signatureId];
                     retObj[Protocol.resultId] = result;
-
                     socket.send(JSON.stringify(retObj));
+                    */
+
                 }
 
                 obj[Protocol.argsId].unshift(socket);

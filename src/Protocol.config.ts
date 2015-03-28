@@ -14,6 +14,8 @@ module Eureca {
         static functionId = 'f';
         static argsId = 'a';
         static resultId = 'r';
+
+        static errorId = 'e';
         static signatureId = '_r';        
     }
 }

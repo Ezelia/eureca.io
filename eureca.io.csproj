@@ -62,12 +62,18 @@
     <CodeAnalysisDictionary Include="src\EObject.class.ts" />
     <Content Include="examples\0-helloworld\index.html" />
     <Content Include="examples\0-helloworld\server.js" />
+    <Content Include="examples\0-tests\client.js" />
+    <Content Include="examples\0-tests\index.html" />
+    <Content Include="examples\0-tests\server.js" />
     <Content Include="examples\5-async-returns\client.js" />
     <Content Include="examples\5-async-returns\index.html" />
     <Content Include="examples\5-async-returns\server.js" />
     <Content Include="examples\6-authentication\client.js" />
     <Content Include="examples\6-authentication\index.html" />
     <Content Include="examples\6-authentication\server.js" />
+    <Content Include="examples\7-webrtc\client.js" />
+    <Content Include="examples\7-webrtc\index.html" />
+    <Content Include="examples\7-webrtc\server.js" />
     <Content Include="Gruntfile.js" />
     <Content Include="TODO.txt" />
     <Content Include="examples\1-http-server\server.js" />
@@ -80,7 +86,6 @@
     <Content Include="examples\99-bidirectional-calls\client.js" />
     <Content Include="examples\99-bidirectional-calls\index.html" />
     <Content Include="examples\99-bidirectional-calls\server.js" />
-    <Content Include="tsdoc.json" />
     <TypeScriptCompile Include="src\transport\Primus.transport.ts" />
     <TypeScriptCompile Include="src\Protocol.config.ts" />
     <Content Include="tests\spec\index.html" />
