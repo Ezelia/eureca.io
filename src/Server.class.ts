@@ -480,8 +480,9 @@ module Eureca  {
         public attach (server:any) {
 
             var app = server;
-            if (server._events.request !== undefined && server.routes === undefined) app = server._events.request;
-
+            var requestHandler = server;
+            if (server._events && server._events.request !== undefined && server.routes === undefined) app = server._events.request;
+            if (app.on) requestHandler = app;
             //this._checkHarmonyProxies();
 
             this.allowedF = this.settings.allow || [];
@@ -516,7 +517,7 @@ module Eureca  {
             else  //Fallback to nodejs
             {
                 
-                app.on('request', function (request, response) {
+                requestHandler.on('request', function (request, response) {
                     if (request.method === 'GET') {
                         if (request.url.split('?')[0] === _clientUrl) {
                             _this.sendScript(request, response, _prefix);
