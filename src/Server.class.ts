@@ -390,10 +390,11 @@ module Eureca  {
                     //handle remote call
                     if (jobj[Eureca.Protocol.functionId] !== undefined) {
                         if (socket.context == undefined) {
-                            var returnFunc = function (result) {
+                            var returnFunc = function (result, error=null) {
                                 var retObj = {};
                                 retObj[Eureca.Protocol.signatureId] = this.retId;
                                 retObj[Eureca.Protocol.resultId] = result;
+								retObj[Eureca.Protocol.errorId] = error;
                                 this.connection.send(JSON.stringify(retObj));
                             }
 

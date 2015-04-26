@@ -1,7 +1,7 @@
 {
   "name": "eureca.io",
   "description": "Nodejs remote procedure call supporting multiple transports",
-  "version": "0.6.4",
+  "version": "0.6.41",
   "author": {
     "name": "Alaa-eddine KADDOURI"
   },

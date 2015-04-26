@@ -414,7 +414,6 @@ module Eureca {
                             this.connection.send(JSON.stringify(retObj));
                         }
 
-						
                         client.context = { user: { clientId: client.id }, connection: client, socket: client, serverProxy: client.serverProxy, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
                     }
                     client.context.retId = jobj[Eureca.Protocol.signatureId];

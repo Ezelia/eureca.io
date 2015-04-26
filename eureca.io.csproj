@@ -74,6 +74,8 @@
     <Content Include="examples\7-webrtc\client.js" />
     <Content Include="examples\7-webrtc\index.html" />
     <Content Include="examples\7-webrtc\server.js" />
+    <Content Include="examples\9-koajs\index.html" />
+    <Content Include="examples\9-koajs\server.js" />
     <Content Include="Gruntfile.js" />
     <Content Include="TODO.txt" />
     <Content Include="examples\1-http-server\server.js" />
