@@ -480,8 +480,7 @@ module Eureca  {
         public attach (server:any) {
 
             var app = server;
-            if (server._events.request !== undefined && server.routes === undefined) app = server._events.request;
-
+            if (server._events && server._events.request !== undefined && server.routes === undefined && server._events.request.on) app = server._events.request;
             //this._checkHarmonyProxies();
 
             this.allowedF = this.settings.allow || [];
