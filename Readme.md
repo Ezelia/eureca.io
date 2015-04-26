@@ -100,7 +100,7 @@ TODO / Roadmap
 
 
 
-Licence
+License
 =======
 
 ```
