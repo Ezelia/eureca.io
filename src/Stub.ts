@@ -99,6 +99,7 @@ module Eureca {
                             }
                         */
                         }
+                        //onReady retro-compatibility
                         proxyObj['onReady'] = proxyObj.then;
 
                         var RMIObj: any = {};
