@@ -92,6 +92,21 @@ module Eureca  {
         private stub: Stub;
         private scriptCache: string = '';
 
+        private serialize = JSON.stringify;
+        private deserialize = function (message) {
+            var jobj;
+            if (typeof message != 'object') {
+                try {
+                    jobj = JSON.parse(message);
+                } catch (ex) { };
+            }
+            else {
+                jobj = message;
+            }
+            return jobj;
+        }
+
+
         private useAuthentication:boolean;
 
         public ioServer;
@@ -116,6 +131,10 @@ module Eureca  {
         constructor(public settings: any = {}) {
             super();
             
+            if (typeof settings.serialize == 'function') this.serialize = settings.serialize;
+            if (typeof settings.deserialize == 'function') this.deserialize = settings.deserialize;
+            
+
 
             this.stub = new Stub(settings);
 
@@ -190,8 +209,9 @@ module Eureca  {
             if (conn.clientProxy !== undefined) return conn.clientProxy;
 
             conn.clientProxy = {};
+            conn._proxy = conn.clientProxy;
             //this.importClientFunction(conn.client, conn, this.allowedF);
-            this.stub.importRemoteFunction(conn.clientProxy, conn, conn.contract || this.allowedF);
+            this.stub.importRemoteFunction(conn.clientProxy, conn, conn.contract || this.allowedF, this.serialize);
 
             
             return conn.clientProxy;
@@ -212,9 +232,9 @@ module Eureca  {
             if (conn === undefined) return false;
 
             conn.clientProxy = {};
-
+            conn._proxy = conn.clientProxy;
             //this.importClientFunction(conn.client, conn, this.allowedF);
-            this.stub.importRemoteFunction(conn.clientProxy, conn, this.allowedF);
+            this.stub.importRemoteFunction(conn.clientProxy, conn, this.allowedF, this.serialize);
         }
 
         public getConnection (id) {
@@ -300,7 +320,7 @@ module Eureca  {
 
                 //attach socket client
                 socket.clientProxy = _this.getClient(socket.id);
-
+                socket._proxy = socket.clientProxy;
 
 
                 /**
@@ -329,16 +349,16 @@ module Eureca  {
 
                     
 
-                    var jobj;
+                    var jobj = _this.deserialize.call(socket, message);
 
-                    if (typeof message != 'object') {
-                        try {
-                            jobj = JSON.parse(message);
-                        } catch (ex) { };
-                    }
-                    else {
-                        jobj = message;
-                    }
+                    //if (typeof message != 'object') {
+                    //    try {
+                    //        jobj = JSON.parse(message);
+                    //    } catch (ex) { };
+                    //}
+                    //else {
+                    //    jobj = message;
+                    //}
 
 
                     if (jobj === undefined) {
@@ -405,6 +425,13 @@ module Eureca  {
 
                         //if (!_this.settings.preInvoke || jobj[Eureca.Protocol.functionId] == 'authenticate' || (typeof _this.settings.preInvoke == 'function' && _this.settings.preInvoke.apply(context)))
                         
+
+                        //Experimental custom context sharing
+                        //remote context is shared throught serverProxy or proxy function in the client side
+                        //if (jobj[Eureca.Protocol.context]) {
+                        //    socket.remoteContext = jobj[Eureca.Protocol.context];
+                        //}
+
                         _this.stub.invoke(socket.context, _this, jobj, socket);
 
 

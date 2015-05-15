@@ -93,6 +93,19 @@ module Eureca {
         public prefix: string;
         public uri: string;
 
+        private serialize = JSON.stringify;
+        private deserialize = function (message) {
+            var jobj;
+            if (typeof message != 'object') {
+                try {
+                    jobj = JSON.parse(message);
+                } catch (ex) { };
+            }
+            else {
+                jobj = message;
+            }
+            return jobj;
+        }
 
         /**
          * When the connection is estabilished, the server proxy object allow calling exported server functions.
@@ -128,6 +141,8 @@ module Eureca {
             super();
 
             
+            if (typeof settings.serialize == 'function') this.serialize = settings.serialize;
+            if (typeof settings.deserialize == 'function') this.deserialize = settings.deserialize;
 
             
 
@@ -299,6 +314,8 @@ module Eureca {
             });
             this.socket = client;
 
+            client._proxy = this.serverProxy;
+
             this._handleClient(client, this.serverProxy);
 
         }
@@ -316,19 +333,19 @@ module Eureca {
             client.on('message', function (data) {
                 _this.trigger('message', data);
 
-                var jobj: any;
+                var jobj: any = _this.deserialize.call(client, data);
 
-                if (typeof data != 'object') {
-                    try {
-                        jobj = JSON.parse(data);
-                    }
-                    catch (ex) {
-                        jobj = {};
-                    }
-                }
-                else {
-                    jobj = data;
-                }
+                //if (typeof data != 'object') {
+                //    try {
+                //        jobj = JSON.parse(data);
+                //    }
+                //    catch (ex) {
+                //        jobj = {};
+                //    }
+                //}
+                //else {
+                //    jobj = data;
+                //}
 
                 if (typeof jobj != 'object') {
                     _this.trigger('unhandledMessage', data);
@@ -360,7 +377,7 @@ module Eureca {
                     /*****************************************************/
 
 
-                    _this.stub.importRemoteFunction(proxy, client, jobj[Eureca.Protocol.contractId]);
+                    _this.stub.importRemoteFunction(proxy, client, jobj[Eureca.Protocol.contractId], _this.serialize);
 
 
                     //var next = function () {
@@ -417,6 +434,27 @@ module Eureca {
                         client.context = { user: { clientId: client.id }, connection: client, socket: client, serverProxy: client.serverProxy, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
                     }
                     client.context.retId = jobj[Eureca.Protocol.signatureId];
+
+
+                    //Experimental custom context sharing
+                    //remote context is shared throught clientProxy or proxy function in the server side
+                    //Example 
+                    // a server exposing hello() function
+                    // a client calling server hello() function
+                    //
+                    // in the client side you can issue : 
+                    //    eurecaServer.hello.context = {somefield:'someData'}
+                    //    //you can also use eurecaServer.context = {somefield:'someData'} in this case it'll be global to all exposed functions !
+                    //    eurecaServer.hello();
+                    //
+                    // in the server side, you get the remote shared context throught
+                    //    exports.hello = function() {
+                    //          console.log(this.remoteContext); // <== you get the remote context here 
+                    //          console.log('hello');
+                    //    }
+                    //if (jobj[Eureca.Protocol.context]) {
+                    //    client.remoteContext = jobj[Eureca.Protocol.context];
+                    //}
 
                     _this.stub.invoke(client.context, _this, jobj, client);
                     return;

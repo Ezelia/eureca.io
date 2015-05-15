@@ -9,6 +9,7 @@ module Eureca {
         static authResp = '__authr__';
         static signal = '__signal__';
         static signalACK = '__sigack__';
+        
 
         //RPC stuff
         static functionId = 'f';
@@ -17,5 +18,7 @@ module Eureca {
 
         static errorId = 'e';
         static signatureId = '_r';        
+
+        static context = 'c';
     }
 }

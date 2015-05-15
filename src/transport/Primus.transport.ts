@@ -152,7 +152,7 @@ module Eureca.Transports.PrimusTransport {
 
         try {
             //var primusOptions: any = {};
-        options.pathname = options.prefix ? '/' + options.prefix : undefined;
+            options.pathname = options.prefix ? '/' + options.prefix : undefined;
             var primus = new Primus(hook, options);
             primus.save(__dirname + '/js/primus.js');
             var server = new Server(primus);

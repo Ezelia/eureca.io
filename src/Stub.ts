@@ -40,7 +40,7 @@ module Eureca {
         /**
          * 
          */
-        importRemoteFunction(handle, socket, functions) {
+        importRemoteFunction(handle, socket, functions, serialize) {
             //TODO : improve this using cache
 
             var _this = this;
@@ -66,8 +66,7 @@ module Eureca {
                             error: null,
                             sig:null,
                             callback: function () { },
-                            errorCallback: function () { },
-
+                            errorCallback: function () { },                            
                             //TODO : use the standardized promise syntax instead of onReady
                             then: function (fn, errorFn) {
                                 if (this.status != 0) {
@@ -117,7 +116,13 @@ module Eureca {
                         RMIObj[Protocol.functionId] = _this.settings.useIndexes ? idx : fname;
                         RMIObj[Protocol.signatureId] = uid;
                         if (argsArray.length > 0) RMIObj[Protocol.argsId] = argsArray;
-                        socket.send(JSON.stringify(RMIObj));
+
+                        //Experimental custom context sharing
+                        //allow sharing global context (set in serverProxy/clientProxy) or local proxy set in the caller object
+                        //if (proxy[_fname].context || handle.context) RMIObj[Protocol.context] = proxy[_fname].context || handle.context;
+
+                        //socket.send(JSON.stringify(RMIObj));
+                        socket.send(serialize.call(proxy[_fname], RMIObj));
 
                         return proxyObj;
                     }
