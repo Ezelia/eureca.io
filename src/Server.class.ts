@@ -287,6 +287,14 @@ module Eureca  {
             }
         }
 
+        //this function is internally used to return value for asynchronous calls in the server side
+        private static returnFunc (result, error = null) {
+            var retObj = {};
+            retObj[Eureca.Protocol.signatureId] = this['retId'];
+            retObj[Eureca.Protocol.resultId] = result;
+            retObj[Eureca.Protocol.errorId] = error;
+            this['connection'].send(JSON.stringify(retObj));
+        }
 
         private _handleServer(ioServer:IServer)
         {
@@ -409,19 +417,34 @@ module Eureca  {
 
                     //handle remote call
                     if (jobj[Eureca.Protocol.functionId] !== undefined) {
-                        if (socket.context == undefined) {
-                            var returnFunc = function (result, error=null) {
-                                var retObj = {};
-                                retObj[Eureca.Protocol.signatureId] = this.retId;
-                                retObj[Eureca.Protocol.resultId] = result;
-								retObj[Eureca.Protocol.errorId] = error;
-                                this.connection.send(JSON.stringify(retObj));
-                            }
+        //                if (socket.context == undefined) {
+        //                    var returnFunc = function (result, error=null) {
+        //                        var retObj = {};
+        //                        retObj[Eureca.Protocol.signatureId] = this.retId;
+        //                        retObj[Eureca.Protocol.resultId] = result;
+								//retObj[Eureca.Protocol.errorId] = error;
+        //                        this.connection.send(JSON.stringify(retObj));
+        //                    }
 
-                            socket.context = { user: { clientId: socket.id }, connection: socket, socket: socket, clientProxy:socket.clientProxy, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
+        //                    socket.context = { user: { clientId: socket.id }, connection: socket, socket: socket, clientProxy:socket.clientProxy, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
 
-                        }
-                        socket.context.retId = jobj[Eureca.Protocol.signatureId];
+        //                }
+        //                socket.context.retId = jobj[Eureca.Protocol.signatureId];
+        //                _this.stub.invoke(socket.context, _this, jobj, socket);
+
+                            var context = {
+                                user: { clientId: socket.id },
+                                connection: socket,
+                                socket: socket,
+                                clientProxy: socket.clientProxy,
+                                async: false,
+                                retId: jobj[Eureca.Protocol.signatureId],
+                                return: Server.returnFunc
+                            };
+
+                        
+                        //context.retId = jobj[Eureca.Protocol.signatureId];
+
 
                         //if (!_this.settings.preInvoke || jobj[Eureca.Protocol.functionId] == 'authenticate' || (typeof _this.settings.preInvoke == 'function' && _this.settings.preInvoke.apply(context)))
                         
@@ -432,7 +455,7 @@ module Eureca  {
                         //    socket.remoteContext = jobj[Eureca.Protocol.context];
                         //}
 
-                        _this.stub.invoke(socket.context, _this, jobj, socket);
+                        _this.stub.invoke(context, _this, jobj, socket);
 
 
                         return;
