@@ -255,7 +255,6 @@ module Eureca {
 
             var authRequest = {};
             authRequest[Eureca.Protocol.authReq] = args;
-            console.log('sending auth request', authRequest );
             this.socket.send(authRequest);
         }
 
