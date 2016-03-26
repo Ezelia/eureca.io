@@ -46,7 +46,9 @@ module Eureca  {
          * @param {object} [settings] - have the following properties
          * @property {string} [settings.transport=engine.io] - can be "engine.io", "sockjs", "websockets", "faye" or "browserchannel" by default "engine.io" is used
          * @property {function} [settings.authenticate] - If this function is defined, the client will not be able to invoke server functions until it successfully call the client side authenticate method, which will invoke this function.
-         * 
+         * @property {function} [settings.serialize] - If defined, this function is used to serialize the request object before sending it to the client (default is JSON.stringify). This function can be useful to add custom information/meta-data to the transmitted request.
+         * @property {function} [settings.deserialize] - If defined, this function is used to deserialize the received response string.
+
          * @example
          * <h4> # default instantiation</h4>
          * var Eureca = require('eureca.io');
@@ -79,7 +81,7 @@ module Eureca  {
          * 
          */
     export class Server extends EObject {
-        private version = '0.6.0-dev';
+        
 
         public contract: any[];
         public debuglevel: number;
@@ -89,7 +91,7 @@ module Eureca  {
         public clients: any;
 
         private transport: any;
-        private stub: Stub;
+        public stub: Stub;
         private scriptCache: string = '';
 
         private serialize = JSON.stringify;
@@ -131,13 +133,21 @@ module Eureca  {
         constructor(public settings: any = {}) {
             super();
             
-            if (typeof settings.serialize == 'function') this.serialize = settings.serialize;
-            if (typeof settings.deserialize == 'function') this.deserialize = settings.deserialize;
+            if (typeof settings.serialize == 'function')
+                this.serialize = settings.serialize;
+            else
+                settings.serialize = this.serialize;
+
+            if (typeof settings.deserialize == 'function')
+                this.deserialize = settings.deserialize;
+            else
+                settings.deserialize = this.deserialize;
+
             
 
 
             this.stub = new Stub(settings);
-
+            
             settings.transformer = settings.transport || 'engine.io';
             this.transport = Transport.get(settings.transformer);
             
@@ -211,7 +221,7 @@ module Eureca  {
             conn.clientProxy = {};
             conn._proxy = conn.clientProxy;
             //this.importClientFunction(conn.client, conn, this.allowedF);
-            this.stub.importRemoteFunction(conn.clientProxy, conn, conn.contract || this.allowedF, this.serialize);
+            this.stub.importRemoteFunction(conn.clientProxy, conn, conn.contract || this.allowedF/*, this.serialize*/);
 
             
             return conn.clientProxy;
@@ -234,7 +244,7 @@ module Eureca  {
             conn.clientProxy = {};
             conn._proxy = conn.clientProxy;
             //this.importClientFunction(conn.client, conn, this.allowedF);
-            this.stub.importRemoteFunction(conn.clientProxy, conn, this.allowedF, this.serialize);
+            this.stub.importRemoteFunction(conn.clientProxy, conn, this.allowedF/*, this.serialize*/);
         }
 
         public getConnection (id) {
@@ -382,16 +392,17 @@ module Eureca  {
                             var args = jobj[Eureca.Protocol.authReq];
 
                             args.push(function (error) {
-
                                 if (error == null) {
                                     socket.eureca.authenticated = true;
                                     sendContract();
+                                    //Todo : trigger authenticated event
                                 }
 
                                 var authResponse = {};
                                 authResponse[Eureca.Protocol.authResp] = [error];
                                 socket.send(authResponse);
 
+                                _this.trigger('authentication', error);
                             });
                             
                             _this.settings.authenticate.apply(_this, args);
@@ -464,7 +475,8 @@ module Eureca  {
                     //handle remote response
                     if (jobj[Eureca.Protocol.signatureId] !== undefined) //invoke result
                     {
-                        _this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId], jobj[Eureca.Protocol.errorId]);
+                        //_this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId], jobj[Eureca.Protocol.errorId]);
+                        Stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId], jobj[Eureca.Protocol.errorId]);
                         return;
                     }
 

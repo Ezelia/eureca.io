@@ -1,7 +1,7 @@
 exports.Client = require('./lib/EurecaClient.js').Eureca.Client;
 exports.Server = require('./lib/EurecaServer.js').Eureca.Server;
 exports.Transport = require('./lib/EurecaServer.js').Eureca.Transport;
-
+exports.Protocol = require('./lib/EurecaServer.js').Eureca.Protocol;
 
 exports.EurecaServer = (function () {
     
@@ -30,3 +30,5 @@ exports.EurecaClient = (function () {
         return new F(arguments);
     }
 })();
+
+console.log('eureca.io v0.7.0');

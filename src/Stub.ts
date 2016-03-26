@@ -10,17 +10,17 @@ module Eureca {
     // Class
     export class Stub {
 
-        private callbacks: any;
+        private static callbacks: any = {};
         // Constructor
         constructor(public settings: any = {}) {
-            this.callbacks = {};
+            //this.callbacks = {};
         }
 
-        registerCallBack(sig, cb) {
+        static registerCallBack(sig, cb) {
             this.callbacks[sig] = cb;
         }
 
-        doCallBack(sig, result, error) {
+        static doCallBack(sig, result, error) {
             if (!sig) return;
             var proxyObj = this.callbacks[sig];
             delete this.callbacks[sig];
@@ -37,11 +37,72 @@ module Eureca {
             }
         }
 
+
+        //invoke remote function by creating a proxyObject and sending function name and arguments to the remote side
+        public invokeRemote(context, fname, socket, ...args) {
+            
+            var proxyObj = {
+                status: 0,
+                result: null,
+                error: null,
+                sig: null,
+                callback: function () { },
+                errorCallback: function () { },
+                //TODO : use the standardized promise syntax instead of onReady
+                then: function (fn, errorFn) {
+                    if (this.status != 0) {
+
+                        if (this.error == null)
+                            fn(this.result);
+                        else
+                            errorFn(this.error);
+
+                        return;
+                    }
+
+                    if (typeof fn == 'function') {
+                        this.callback = fn;
+                    }
+
+                    if (typeof errorFn == 'function') {
+                        this.errorCallback = errorFn;
+                    }
+
+                }
+            }
+            //onReady retro-compatibility with older eureca.io versions
+            proxyObj['onReady'] = proxyObj.then;
+
+            var RMIObj: any = {};
+
+
+            var argsArray = args;//Array.prototype.slice.call(arguments, 0);
+            var uid = Eureca.Util.randomStr();
+            proxyObj.sig = uid;
+
+
+            Stub.registerCallBack(uid, proxyObj);
+
+
+
+            RMIObj[Protocol.functionId] = /*this.settings.useIndexes ? idx : */fname;
+            RMIObj[Protocol.signatureId] = uid;
+            if (argsArray.length > 0) RMIObj[Protocol.argsId] = argsArray;
+
+
+            
+            socket.send(this.settings.serialize.call(context, RMIObj));
+
+            
+            return proxyObj;
+        }
+
+
         /**
-         * 
+         * Generate proxy functions allowing to call remote functions
          */
-        importRemoteFunction(handle, socket, functions, serialize) {
-            //TODO : improve this using cache
+        public importRemoteFunction(handle, socket, functions/*, serialize=null*/) {
+            
 
             var _this = this;
             if (functions === undefined) return;
@@ -58,8 +119,14 @@ module Eureca {
                     /* end namespace parsing */
 
                     //TODO : do we need to re generate proxy function if it's already declared ?
-                    proxy[_fname] = function () {
+                    proxy[_fname] = function (...args) {
                         
+                        args.unshift(socket);
+                        args.unshift(fname);
+                        args.unshift(proxy[_fname]);
+                        return _this.invokeRemote.apply(_this, args);
+                        
+                        /*
                         var proxyObj = {
                             status: 0,
                             result: null,
@@ -88,28 +155,19 @@ module Eureca {
                                 }
 
                             }
-                        /*
-                            onReady: function (fn)
-                            {
-                                if (typeof fn == 'function')
-                                {
-                                    this.callback = fn;
-                                }
-                            }
-                        */
                         }
-                        //onReady retro-compatibility
+                        //onReady retro-compatibility with older eureca.io versions
                         proxyObj['onReady'] = proxyObj.then;
 
                         var RMIObj: any = {};
 
                         
-                        var argsArray = Array.prototype.slice.call(arguments, 0);
+                        var argsArray = args;//Array.prototype.slice.call(arguments, 0);
                         var uid = Eureca.Util.randomStr();
                         proxyObj.sig = uid;
 
 
-                        _this.registerCallBack(uid, proxyObj);
+                        Stub.registerCallBack(uid, proxyObj);
 
 
 
@@ -122,9 +180,11 @@ module Eureca {
                         //if (proxy[_fname].context || handle.context) RMIObj[Protocol.context] = proxy[_fname].context || handle.context;
 
                         //socket.send(JSON.stringify(RMIObj));
-                        socket.send(serialize.call(proxy[_fname], RMIObj));
+                        socket.send(_this.settings.serialize.call(proxyObj, RMIObj));
 
                         return proxyObj;
+                        */
+                        
                     }
                 })(i, functions[i]);
             }
@@ -140,7 +200,10 @@ module Eureca {
             retObj[Protocol.errorId] = error;
             socket.send(JSON.stringify(retObj));
         }
-        invoke(context, handle, obj, socket?) {
+
+
+        //invoke exported function and send back the result to the invoker
+        public invoke(context, handle, obj, socket?) {
 
 
             var fId = parseInt(obj[Protocol.functionId]);

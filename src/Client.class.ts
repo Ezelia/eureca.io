@@ -118,7 +118,7 @@ module Eureca {
         public socket: ISocket;
         public contract: string[];
         
-        private stub: Stub;
+        public stub: Stub;
         private transport: any;        
 
 
@@ -141,9 +141,15 @@ module Eureca {
             super();
 
             
-            if (typeof settings.serialize == 'function') this.serialize = settings.serialize;
-            if (typeof settings.deserialize == 'function') this.deserialize = settings.deserialize;
+            if (typeof settings.serialize == 'function')
+                this.serialize = settings.serialize;
+            else
+                settings.serialize = this.serialize;
 
+            if (typeof settings.deserialize == 'function')
+                this.deserialize = settings.deserialize;
+            else
+                settings.deserialize = this.deserialize;
             
 
             this.stub = new Stub(settings);
@@ -376,7 +382,7 @@ module Eureca {
                     /*****************************************************/
 
 
-                    _this.stub.importRemoteFunction(proxy, client, jobj[Eureca.Protocol.contractId], _this.serialize);
+                    _this.stub.importRemoteFunction(proxy, client, jobj[Eureca.Protocol.contractId]/*, _this.serialize*/);
 
 
                     //var next = function () {
@@ -461,7 +467,8 @@ module Eureca {
 
                 if (jobj[Eureca.Protocol.signatureId] !== undefined) //invoke result
                 {
-                    _this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId], jobj[Eureca.Protocol.errorId]);
+                    //_this.stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId], jobj[Eureca.Protocol.errorId]);
+                    Stub.doCallBack(jobj[Eureca.Protocol.signatureId], jobj[Eureca.Protocol.resultId], jobj[Eureca.Protocol.errorId]);
                     return;
                 }
 

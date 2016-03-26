@@ -1,0 +1,58 @@
+﻿v 0.7.0
+Client and server stub fields is made public
+Changed some Stub functions to static 
+	* those changes make the Stub class more generic and usable by 3rd party modules.
+Eureca.Protocol is now exported on client and server side
+Add public serialize/deserialize functions 
+Add 'authentication' event, triggered in the server side when a client authenticates
+Note: in next release all examples will be moved to a separate repository
+
+
+
+v 0.6.42
+Fixed server side issue in async calls : when multiple async calls was made within a small interval, their contexts conflicted.
+
+
+v 0.6.41
+Fixed invocation issue allowing a client to crash the server
+Add support for promises syntax
+deprecating OnReady() syntax to the benefit of then() syntax which is the standard for Javascript Promises.
+Add support for koajs (by Glenn Tarcea)
+
+
+v 0.6.4
+Removed dependency on Harmony proxies as it add a lot of complexity without much benefit.
+Enhanced internal event system
+Better/simpler authentication feature 
+Simpler client access in server exported function
+Removed obsolete files from source project
+Code optimization to to save some memory and redure dynamically generated objects number (may improve performance a little but not noticable compared to network latency)
+Fix issues in some examples
+Add new examples
+
+
+v 0.6.2
+Fix asynchronous response not returned in some cases
+
+v 0.6.0
+Switched to primus.io, this will allow support for more transport layers
+
+
+v 0.5.0
+Add support for asynchronous returns
+Complete code refactoring to prepare the switch to primus.io
+
+
+v 0.4.0
+Add authentication support
+Add support for multiple transport layers : engine.io and sockjs are supported
+Fix issue with data not returned in some cases
+
+
+v 0.2.0
+Bidirectional RPC support
+
+
+v 0.1.0
+First release
+Client to server RPC

@@ -1,11 +1,11 @@
 ﻿var express = require('express')
   , app = express(app)
   , server = require('http').createServer(app);
-var EurecaServer = require('../../').EurecaServer;
+var Eureca = require('../../');
 
 var transportName = 'engine.io';
 
-var eurecaServer = new EurecaServer({ transport: transportName });
+var eurecaServer = new Eureca.Server({ transport: transportName });
 eurecaServer.attach(server);
 
 //functions under "exports" namespace will
@@ -25,7 +25,7 @@ eurecaServer.exports.hello = function () {
 app.get('/', function (req, res, next) {
     res.sendfile('index.html');
 });
-var EurecaClient = require('../../').EurecaClient;
+//var EurecaClient = require('../../').EurecaClient;
 
 
 var ready = false;
@@ -50,7 +50,7 @@ describe("Server side", function () {
         runs(function () {            
             tests.push(1);
             flag = false;
-            client = new EurecaClient({ transport: transportName, autoConnect: true, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
+            client = new Eureca.Client({ transport: transportName, autoConnect: true, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
             eurecaServer.onConnect(function (conn) {
                 flag = true;
                 id = conn.id;                
@@ -77,7 +77,7 @@ describe("Server side", function () {
                 flag = true;
                 id = conn.id;
             }
-            var client2 = new EurecaClient({ transport: transportName, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
+            var client2 = new Eureca.Client({ transport: transportName, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
             client2.ready(function (proxy) {
                 proxy.foo().onReady(function () {
                     client2.disconnect();
@@ -108,7 +108,7 @@ describe("Server side", function () {
                 ip = conn.eureca.remoteAddress;
             }
 
-            var client2 = new EurecaClient({ transport: transportName, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
+            var client2 = new Eureca.Client({ transport: transportName, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
             client2.ready(function (proxy) {
                 proxy.foo2().onReady(function () {                    
                     client2.disconnect();
@@ -133,7 +133,7 @@ describe("Client -> Server ", function () {
     it("should connect to server", function () {
         runs(function () {
             tests.push(1);
-            client = new EurecaClient({ transport: transportName, autoConnect: false, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
+            client = new Eureca.Client({ transport: transportName, autoConnect: false, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
             client.connect();
             client.ready(function (proxy) {
                 ready = true;
