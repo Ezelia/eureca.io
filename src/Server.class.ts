@@ -365,7 +365,7 @@ module Eureca  {
                     _this.trigger('message', message, socket);
                     
 
-                    
+                    var context: any;
 
                     var jobj = _this.deserialize.call(socket, message);
 
@@ -404,8 +404,14 @@ module Eureca  {
 
                                 _this.trigger('authentication', error);
                             });
-                            
-                            _this.settings.authenticate.apply(_this, args);
+
+                            var context:any = {
+                                user: { clientId: socket.id },
+                                connection: socket,
+                                socket: socket,
+                            };
+
+                            _this.settings.authenticate.apply(context, args);
 
                         }
                         return;
@@ -443,7 +449,7 @@ module Eureca  {
         //                socket.context.retId = jobj[Eureca.Protocol.signatureId];
         //                _this.stub.invoke(socket.context, _this, jobj, socket);
 
-                            var context = {
+                            var context:any = {
                                 user: { clientId: socket.id },
                                 connection: socket,
                                 socket: socket,

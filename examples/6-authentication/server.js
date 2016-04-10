@@ -6,7 +6,8 @@ var server = http.createServer();
 var Eureca = require('../../');
 
 var eurecaServer = new Eureca.Server({
-    authenticate: function (authToken, next) {        
+    authenticate: function (authToken, next) {
+        //this.socket gives access to client socket
         console.log('Called Auth with token=', authToken);
 
         if (authToken == 'OK') next();

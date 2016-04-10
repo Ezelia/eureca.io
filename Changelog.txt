@@ -1,4 +1,7 @@
-﻿v 0.7.0
+﻿v 0.7.1
+ Add missing context to authentication methode (allow access to clientID and client socket from authentication callback)
+
+v 0.7.0
 Client and server stub fields is made public
 Changed some Stub functions to static 
 	* those changes make the Stub class more generic and usable by 3rd party modules.

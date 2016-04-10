@@ -19,6 +19,7 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <UpgradeBackupLocation />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -60,6 +61,7 @@
   </PropertyGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="src\EObject.class.ts" />
+    <Content Include="Changelog.txt" />
     <Content Include="examples\0-helloworld\index.html" />
     <Content Include="examples\0-helloworld\server.js" />
     <Content Include="examples\0-tests\client.js" />
