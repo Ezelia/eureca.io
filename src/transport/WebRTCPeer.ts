@@ -78,8 +78,8 @@ module Eureca.Transports.WebRTC {
             if (webrtc && webrtc.unavailable) {
 
                 console.error("wrtc module not found\n");
-                console.error(" * If you are running Linux or MacOS X please follow instructions here https://github.com/js-platform/node-webrtc to install wrtc\n");
-                console.error(" * Windows server side WebRTC is not supported yet\n");
+                console.error(" * Please follow instructions here https://github.com/js-platform/node-webrtc to install wrtc\n");
+                console.error(" * Note : WebRTC is only supported on x64 platforms\n");
                 process.exit();
             }
 
@@ -92,8 +92,8 @@ module Eureca.Transports.WebRTC {
         }
 
 
-        public makeOffer(callback) {
-            var _this = this;
+        public makeOffer(callback:Function, failureCallback:Function) {
+            var __this = this;
 
             var pc = new PeerConnection(this.cfg, this.con);
             this.pc = pc;
@@ -103,10 +103,15 @@ module Eureca.Transports.WebRTC {
             pc.oniceconnectionstatechange = this.oniceconnectionstatechange.bind(this);
             pc.onicegatheringstatechange = this.onicegatheringstatechange.bind(this);
             pc.createOffer(function (desc) {
-                pc.setLocalDescription(desc, function () { });
+                pc.setLocalDescription(desc, 
+                    function () { 
+                        
+                    },
+                    failureCallback
+                );
                 // We'll pick up the offer text once trickle ICE is complete,
                 // in onicecandidate.
-            });
+            }, failureCallback);
             pc.onicecandidate = function (candidate) {
                 // Firing this callback with a null candidate indicates that
                 // trickle ICE gathering has finished, and all the candidates
@@ -121,23 +126,23 @@ module Eureca.Transports.WebRTC {
         }
 
         private makeDataChannel() {
-            var _this = this;
+            var __this = this;
             // If you don't make a datachannel *before* making your offer (such
             // that it's included in the offer), then when you try to make one
             // afterwards it just stays in "connecting" state forever.  This is
             // my least favorite thing about the datachannel API.
-            var channel = this.pc.createDataChannel(this.id, { id: _this.id, reliable: _this.channelSettings.reliable, maxRetransmits: _this.channelSettings.maxRetransmits, ordered: _this.channelSettings.ordered });
+            var channel = this.pc.createDataChannel(this.id, { /*id: __this.id, */reliable: __this.channelSettings.reliable, maxRetransmits: __this.channelSettings.maxRetransmits, ordered: __this.channelSettings.ordered });
             this.channel = channel;
             channel.onopen = function () {
-                _this.trigger('open', channel);
+                __this.trigger('open', channel);
             };
             channel.onmessage = function (evt) {
                 var data = JSON.parse(evt.data);
-                _this.trigger('message', data.message);
+                __this.trigger('message', data.message);
 
                 
             };
-            channel.onerror = function (error) { _this.doHandleError(error) };;
+            channel.onerror = function (error) { __this.doHandleError(error) };;
         }
 
 
@@ -191,12 +196,12 @@ module Eureca.Transports.WebRTC {
         private stateTimeout;
         public oniceconnectionstatechange(state) {
             
-            var _this = this;
+            var __this = this;
             
 
             if (this.pc) {
-                console.info('ice connection state change:', this.pc.iceConnectionState);
-
+                //console.info('ice connection state change:', this.pc.iceConnectionState);
+                this.trigger('stateChange', this.pc.iceConnectionState);
                 this.lastState = this.pc.iceConnectionState;
                 if (this.stateTimeout != undefined)
                     clearTimeout(this.stateTimeout);
@@ -216,13 +221,13 @@ module Eureca.Transports.WebRTC {
                         maxtries--;
                         if (maxtries <= 0) {
                             clearInterval(itv);
-                            _this.doHandleError('Channel readyState failure ');
+                            __this.doHandleError('Channel readyState failure ');
                             return;
                         }
 
-                        if (_this.channel.readyState == 'open') {
+                        if (__this.channel.readyState == 'open') {
                             clearInterval(itv);
-                            _this.channel.send(JSON.stringify(ackObj));
+                            __this.channel.send(JSON.stringify(ackObj));
                         }
                     }, 500);
 
@@ -231,8 +236,8 @@ module Eureca.Transports.WebRTC {
                 }
                 else {
                     this.stateTimeout = setTimeout(function () {
-                        console.log('State timeout');
-                        _this.trigger('timeout');
+                        //console.log('State timeout');
+                        __this.trigger('timeout');
                     }, 5000);
                 }
 
@@ -244,38 +249,38 @@ module Eureca.Transports.WebRTC {
         }
 
         public doCreateAnswer() {
-            var _this = this;
+            var __this = this;
             this.pc.createAnswer(
-                function (desc) { _this.doSetLocalDesc(desc) },
-                function (error) { _this.doHandleError(error) }
+                function (desc) { __this.doSetLocalDesc(desc) },
+                function (error) { __this.doHandleError(error) }
                 );
         }
 
         public doSetLocalDesc(desc) {
-            var _this = this;
+            var __this = this;
             //this.answer = desc;
-            this.pc.setLocalDescription(desc, undefined,
-                function (error) { _this.doHandleError(error) });
+            this.pc.setLocalDescription(desc, function() {},
+                function (error) { __this.doHandleError(error) });
         }
 
         public doHandleError(error) {
             this.trigger('error', error);
         }
         private doHandleDataChannels() {
-            var _this = this;
+            var __this = this;
             //var labels = Object.keys(this.dataChannelSettings);
             this.pc.ondatachannel = function (evt) {
                 var channel = evt.channel;
-                _this.channel = channel;
+                __this.channel = channel;
 
                 var label = channel.label;
-                _this.pendingDataChannels[label] = channel;
+                __this.pendingDataChannels[label] = channel;
                 //channel.binaryType = 'arraybuffer';
 
                 
                 channel.onopen = function () {
-                    _this.dataChannels[label] = channel;
-                    delete _this.pendingDataChannels[label];
+                    __this.dataChannels[label] = channel;
+                    delete __this.pendingDataChannels[label];
                 };
                 channel.onmessage = function (evt) {
 
@@ -283,18 +288,18 @@ module Eureca.Transports.WebRTC {
                     var data = JSON.parse(evt.data);
 
                     if (data[Protocol.signalACK] == 1){                
-                        _this.trigger('open', channel);
+                        __this.trigger('open', channel);
                     }
 
                     
-                    _this.trigger('message', data.message);
+                    __this.trigger('message', data.message);
                 };
-                channel.onerror = function (error) { _this.doHandleError(error) };
+                channel.onerror = function (error) { __this.doHandleError(error) };
             };
 
             this.pc.setRemoteDescription(this.offer,
-                function () { _this.doCreateAnswer() },
-                function (error) { _this.doHandleError(error) });
+                function () { __this.doCreateAnswer() },
+                function (error) { __this.doHandleError(error) });
         }
 
 

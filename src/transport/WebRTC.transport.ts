@@ -71,30 +71,33 @@ module Eureca.Transports.WebRTCTransport {
             if (this.socket == null) return;
 
 
-            var _this = this;
+            var __this = this;
             this.socket.onopen = function () {
-                _this.trigger('open');
+                __this.trigger('open');
             }
 
             this.socket.onmessage = function (event) {
-                _this.trigger('message', event.data);
+                __this.trigger('message', event.data);
             }
 
             this.socket.onclose = function () {
-                _this.trigger('close');
+                __this.trigger('close');
             };
 
             this.socket.onerror = function (error) {
-                _this.trigger('error', error);
+                __this.trigger('error', error);
             };
 
 
-            //if (this.peer) {
+            if (this.peer) {
             //    this.peer.unbindEvent('disconnected');
             //    this.peer.on('disconnected', function () {
             //        _this.trigger('close');
             //    });
-            //}
+               this.peer.on('stateChange', function (s) {
+                __this.trigger('stateChange', s);
+               });            
+            }
             /*
             this.socket.on('reconnecting', function () {
                 var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
@@ -164,22 +167,22 @@ module Eureca.Transports.WebRTCTransport {
             }
         }
         private serverPeer: WebRTC.Peer = new WebRTC.Peer();
-        constructor(public server: any, options:any) {
-            var _this = this;
+        constructor(public appServer: any, options:any) {
+            var __this = this;
 
 
-            var app = server;
-            if (server._events.request !== undefined && server.routes === undefined) app = server._events.request;
+            var app = appServer;
+            if (appServer._events.request !== undefined && appServer.routes === undefined) app = appServer._events.request;
 
             if (app.get && app.post) {
                 app.post('/webrtc-' + options.prefix, function (request, response) {
-                    _this.processPost(request, response, function () {
+                    __this.processPost(request, response, function () {
                         //console.log('Got post data', request.post);
 
                         var offer = request.post[Protocol.signal];
                         response.writeHead(200, "OK", { 'Content-Type': 'text/plain' });
 
-                        _this.serverPeer.getOffer(offer, function (desc) {
+                        __this.serverPeer.getOffer(offer, function (desc) {
                             var resp = {};
                             resp[Protocol.signal] = desc;
 
@@ -195,16 +198,16 @@ module Eureca.Transports.WebRTCTransport {
 
             else {
                 //we use POST request for webRTC signaling            
-                server.on('request', function (request, response) {
+                appServer.on('request', function (request, response) {
                     if (request.method === 'POST') {
                         if (request.url.split('?')[0] === '/webrtc-' + options.prefix) {
-                        _this.processPost(request, response, function () {
+                        __this.processPost(request, response, function () {
                             //console.log('Got post data', request.post);
 
                             var offer = request.post[Protocol.signal];
                             response.writeHead(200, "OK", { 'Content-Type': 'text/plain' });
 
-                            _this.serverPeer.getOffer(offer, function (desc) {
+                            __this.serverPeer.getOffer(offer, function (desc) {
                                 var resp = {};
                                 resp[Protocol.signal] = desc;
 
@@ -218,15 +221,27 @@ module Eureca.Transports.WebRTCTransport {
                     }
                 });
             }
+
+            __this.serverPeer.on('stateChange', function(s) {
+
+                __this.appServer.eurecaServer.trigger('stateChange', s);
+            });
+            
         }
+
+        
         onconnect(callback: (Socket) => void) {
+
             this.serverPeer.on('open', function (datachannel) {
-                var socket = new Socket(datachannel)
+                var socket = new Socket(datachannel);
+                             
                 //Eureca.Util.extend(iosocket, socket);
                 callback(socket);
 
             });
         }
+
+
     }
 
     /**
@@ -278,7 +293,8 @@ module Eureca.Transports.WebRTCTransport {
             }
             retries--;
 
-            clientPeer.makeOffer(function (pc) {
+            clientPeer.makeOffer(function (pc) 
+            {
                 if (Eureca.Util.isNodejs) {
 
 
@@ -360,7 +376,7 @@ module Eureca.Transports.WebRTCTransport {
                             retries = options.retries;
 
 
-                            console.log('Got response ', resp);
+                            //console.log('Got response ', resp);
                         }
                         else {
                             if (xhr.readyState == 4 && xhr.status != 200) {
@@ -375,7 +391,12 @@ module Eureca.Transports.WebRTCTransport {
 
                 client.update(clientPeer.channel);
                 
-            });
+            },
+            function(error) {
+
+                client.trigger('error', error);
+            }
+        );
         }
 
 
@@ -387,5 +408,20 @@ module Eureca.Transports.WebRTCTransport {
 
         return client;
     }
-    Transport.register('webrtc', '', createClient, createServer);
+
+    
+    const deserialize = (message) => {
+        var jobj;
+        if (typeof message != 'object') {
+            try {
+                jobj = JSON.parse(message);
+            } catch (ex) { };
+        }
+        else {
+            jobj = message;
+        }
+        return jobj;
+    }    
+    
+    Transport.register('webrtc', '', createClient, createServer, JSON.stringify, deserialize);
 }

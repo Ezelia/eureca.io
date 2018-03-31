@@ -1,37 +1,48 @@
 {
   "name": "eureca.io",
-  "description": "Nodejs remote procedure call supporting multiple transports",
-  "version": "0.7.1",
+  "description": "Nodejs transparent bidirectional remote procedure call (RPC) supporting multiple transports : WebRTC, Websocket, engine.io, faye ...etc",
+  "version": "0.8.0",
   "author": {
     "name": "Alaa-eddine KADDOURI"
   },
   "keywords": [
     "RPC",
+    "multiplayer",
+    "realtime",
+    "socket",
+    "UDP",
     "Primus",
     "engine.io",
     "sockjs",
     "socket.io",
     "websocket",
+    "webRTC",
     "xhr",
     "ajax",
     "eureca",
-    "node"
+    "node",
+    "board"
   ],
+  "license": "MIT",
   "homepage": "http://eureca.io/",
   "repository": {
     "type": "git",
     "url": "https://github.com/Ezelia/eureca.io"
   },
   "dependencies": {
-    "primus": ">= 2.1.0"
+    "primus": "^7.1.1"
   },
   "engines": {
-    "node": ">=0.10.20"
+    "node": ">=4.0.0"
   },
   "main": "index.js",
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-typescript": "^0.6.1",
-    "typescript": "^1.4.1"
+    "express": "^4.16.2",
+    "gulp": "^4.0.0",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-typescript": "^3.2.3",
+    "jasmine": "^3.1.0",
+    "jasmine-console-reporter": "^2.0.1",
+    "typescript": "^2.6.2"
   }
 }

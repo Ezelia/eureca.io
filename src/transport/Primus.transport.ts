@@ -40,35 +40,35 @@ module Eureca.Transports.PrimusTransport {
             this.bindEvents();
         }
         private bindEvents() {
-            var _this = this;
+            var __this = this;
             this.socket.on('open', function () {
                 var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
                 args.unshift('open');
-                _this.trigger.apply(_this, args);
+                __this.trigger.apply(__this, args);
             });
 
             this.socket.on('data', function () {
                 var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
                 args.unshift('message');
-                _this.trigger.apply(_this, args);
+                __this.trigger.apply(__this, args);
             });
 
             this.socket.on('end', function () {
                 var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
                 args.unshift('close');
-                _this.trigger.apply(_this, args);
+                __this.trigger.apply(__this, args);
             });
 
             this.socket.on('error', function () {
                 var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
                 args.unshift('error');
-                _this.trigger.apply(_this, args);
+                __this.trigger.apply(__this, args);
             });
 
             this.socket.on('reconnecting', function () {
                 var args = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : [];
                 args.unshift('reconnecting');
-                _this.trigger.apply(_this, args);
+                __this.trigger.apply(__this, args);
             });
 
 
@@ -148,13 +148,17 @@ module Eureca.Transports.PrimusTransport {
 
     }
 
+    
     var createServer = function (hook, options: any = {}) {
 
         try {
             //var primusOptions: any = {};
             options.pathname = options.prefix ? '/' + options.prefix : undefined;
             var primus = new Primus(hook, options);
-            primus.save(__dirname + '/js/primus.js');
+            //primus.save(__dirname + '/js/primus.js');
+            var primusTransport = Transport.get('primus');
+            //populate the client script
+            primusTransport.script = primus.library();
             var server = new Server(primus);
 
             return server;
@@ -196,5 +200,14 @@ module Eureca.Transports.PrimusTransport {
 
         return client;
     }
-    Transport.register('primus', '/js/primus.js', createClient, createServer);
+    //Transport.register('primus', '/js/primus.js', createClient, createServer);
+
+    //set empty client script by default, it'll be populated by createClient function
+    Transport.register(
+        'primus', '', 
+        createClient, createServer, 
+        (v)=>v, 
+        (v)=>v
+    );
+    
 }

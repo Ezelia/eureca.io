@@ -1,4 +1,13 @@
-﻿v 0.7.1
+﻿v 0.8.0
+ Async calls now use true ES6 Promises (then() replace OnReady() method)
+ fixed custom serialization/deserialization methods for data transfers
+ WebRTC transport is now supported on all x64 platforms thanks to node-webrtc (Linux, MacOSX and Windows)
+ Moved the examples to a separate repository
+ switched to gulp build system
+ server no more needs write access / this version won't generate any js file in the server side.
+ updated jasmine test specs
+
+v 0.7.1
  Add missing context to authentication methode (allow access to clientID and client socket from authentication callback)
 
 v 0.7.0

@@ -1,6 +1,7 @@
 /// <reference path="Protocol.config.ts" />
 
 /// <reference path="Util.class.ts" />
+/// <reference path="eurecapromise.ts" />
 
 
 
@@ -11,9 +12,13 @@ module Eureca {
     export class Stub {
 
         private static callbacks: any = {};
+        private serialize:Function;
+        private deserialize:Function;
         // Constructor
         constructor(public settings: any = {}) {
             //this.callbacks = {};
+            this.serialize = settings.serialize;
+            this.deserialize = settings.deserialize;
         }
 
         static registerCallBack(sig, cb) {
@@ -27,19 +32,19 @@ module Eureca {
 
             if (proxyObj !== undefined) {
                 proxyObj.status = 1;
-                proxyObj.result = result;
-                proxyObj.error = error;
+                //proxyObj.result = result;
+                //proxyObj.error = error;
 
                 if (error == null)
-                    proxyObj.callback(result);
+                    proxyObj.resolve(result);
                 else
-                    proxyObj.errorCallback(error);
+                    proxyObj.reject(error);
             }
         }
 
 
         //invoke remote function by creating a proxyObject and sending function name and arguments to the remote side
-        public invokeRemote(context, fname, socket, ...args) {
+        public invokeRemoteOld(context, fname, socket, ...args) {
             
             var proxyObj = {
                 status: 0,
@@ -97,7 +102,41 @@ module Eureca {
             return proxyObj;
         }
 
+        public invokeRemote(context, fname, socket, ...args) {
+            
+            let resolveCB: any;
+            let rejectCB: any;
+            var proxyObj = new EurecaPromise((resolve, reject) => {
+                resolveCB = resolve;
+                rejectCB = reject;
+            });
 
+            proxyObj.resolve = resolveCB;
+            proxyObj.reject = rejectCB;
+
+            var RMIObj: any = {};
+
+
+            var argsArray = args;//Array.prototype.slice.call(arguments, 0);
+            var uid = Eureca.Util.randomStr();
+            proxyObj.sig = uid;
+
+
+            Stub.registerCallBack(uid, proxyObj);
+
+
+
+            RMIObj[Protocol.functionId] = /*this.settings.useIndexes ? idx : */fname;
+            RMIObj[Protocol.signatureId] = uid;
+            if (argsArray.length > 0) RMIObj[Protocol.argsId] = argsArray;
+
+
+
+            socket.send(this.settings.serialize.call(context, RMIObj));
+
+
+            return proxyObj;
+        }
         /**
          * Generate proxy functions allowing to call remote functions
          */
@@ -198,7 +237,7 @@ module Eureca {
             retObj[Protocol.signatureId] = sig;
             retObj[Protocol.resultId] = result;
             retObj[Protocol.errorId] = error;
-            socket.send(JSON.stringify(retObj));
+            socket.send(this.serialize(retObj));
         }
 
 

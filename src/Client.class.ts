@@ -93,19 +93,8 @@ module Eureca {
         public prefix: string;
         public uri: string;
 
-        private serialize = JSON.stringify;
-        private deserialize = function (message) {
-            var jobj;
-            if (typeof message != 'object') {
-                try {
-                    jobj = JSON.parse(message);
-                } catch (ex) { };
-            }
-            else {
-                jobj = message;
-            }
-            return jobj;
-        }
+        private serialize = (v) => v;
+        private deserialize = (v) => v;
 
         /**
          * When the connection is estabilished, the server proxy object allow calling exported server functions.
@@ -140,27 +129,28 @@ module Eureca {
         constructor(public settings: any = {}) {
             super();
 
-            
-            if (typeof settings.serialize == 'function')
-                this.serialize = settings.serialize;
-            else
-                settings.serialize = this.serialize;
-
-            if (typeof settings.deserialize == 'function')
-                this.deserialize = settings.deserialize;
-            else
-                settings.deserialize = this.deserialize;
-            
-
-            this.stub = new Stub(settings);
-
             //needed by primus
             settings.transformer = settings.transport || 'engine.io';
             this.transport = Transport.get(settings.transformer);
             
+            
+            if (typeof settings.serialize == 'function' || typeof this.transport.serialize == 'function')
+                this.serialize = settings.serialize || this.transport.serialize;
+
+            settings.serialize = this.serialize;
+
+            if (typeof settings.deserialize == 'function'|| typeof this.transport.deserialize == 'function')
+                this.deserialize = settings.deserialize || this.transport.deserialize
+            
+            settings.deserialize = this.deserialize;
+            
+
+            this.stub = new Stub(settings);
+
+            
 
 
-            var _this = this;
+            
             this.exports = {};
 
             this.settings.autoConnect = !(this.settings.autoConnect === false);
@@ -327,18 +317,18 @@ module Eureca {
 
 
         private _handleClient(client, proxy) {
-            var _this = this;
+            const __this = this;
 
             client.on('open', function () {
-                _this.trigger('connect', client);
-                _this.tries = 0;
+                __this.trigger('connect', client);
+                __this.tries = 0;
             });
 
 
             client.on('message', function (data) {
-                _this.trigger('message', data);
+                __this.trigger('message', data);
 
-                var jobj: any = _this.deserialize.call(client, data);
+                var jobj: any = __this.deserialize.call(client, data);
 
                 //if (typeof data != 'object') {
                 //    try {
@@ -353,16 +343,16 @@ module Eureca {
                 //}
 
                 if (typeof jobj != 'object') {
-                    _this.trigger('unhandledMessage', data);
+                    __this.trigger('unhandledMessage', data);
                     return;
                 }
 
 
                 if (jobj[Eureca.Protocol.contractId]) //should be first message
                 {
-                    var update = _this.contract && _this.contract.length > 0;
+                    var update = __this.contract && __this.contract.length > 0;
 
-                    _this.contract = jobj[Eureca.Protocol.contractId];
+                    __this.contract = jobj[Eureca.Protocol.contractId];
 
 
                     /** Experimental : dynamic client contract*/
@@ -382,11 +372,11 @@ module Eureca {
                     /*****************************************************/
 
 
-                    _this.stub.importRemoteFunction(proxy, client, jobj[Eureca.Protocol.contractId]/*, _this.serialize*/);
+                    __this.stub.importRemoteFunction(proxy, client, jobj[Eureca.Protocol.contractId]/*, _this.serialize*/);
 
 
                     //var next = function () {
-                    _this._ready = true;
+                    __this._ready = true;
                     if (update) {
 
                         /**
@@ -394,12 +384,12 @@ module Eureca {
                         * you'll need this for example, if the server define some functions dynamically and need to make them available to clients.
                         *
                         */
-                        _this.trigger('update', proxy, _this.contract);
+                        __this.trigger('update', proxy, __this.contract);
                     }
                     else {
 
 
-                        _this.trigger('ready', proxy, _this.contract);
+                        __this.trigger('ready', proxy, __this.contract);
                     }
                     //}
 
@@ -418,7 +408,7 @@ module Eureca {
 
 
 
-                    _this.trigger.apply(_this, callArgs);
+                    __this.trigger.apply(__this, callArgs);
                     return;
                 }
 
@@ -433,10 +423,18 @@ module Eureca {
                             retObj[Eureca.Protocol.signatureId] = this.retId;
                             retObj[Eureca.Protocol.resultId] = result;
                             retObj[Eureca.Protocol.errorId] = error;
-                            this.connection.send(JSON.stringify(retObj));
+                            this.connection.send(this.serialize(retObj));
                         }
 
-                        client.context = { user: { clientId: client.id }, connection: client, socket: client, serverProxy: client.serverProxy, async: false, retId: jobj[Eureca.Protocol.signatureId], 'return': returnFunc };
+                        client.context = { 
+                            user: { clientId: client.id }, 
+                            connection: client, 
+                            socket: client, 
+                            serverProxy: client.serverProxy, 
+                            async: false, 
+                            retId: jobj[Eureca.Protocol.signatureId], 
+                            serialize:__this.serialize,
+                            'return': returnFunc };
                     }
                     client.context.retId = jobj[Eureca.Protocol.signatureId];
 
@@ -461,7 +459,7 @@ module Eureca {
                     //    client.remoteContext = jobj[Eureca.Protocol.context];
                     //}
 
-                    _this.stub.invoke(client.context, _this, jobj, client);
+                    __this.stub.invoke(client.context, __this, jobj, client);
                     return;
                 }
 
@@ -472,29 +470,32 @@ module Eureca {
                     return;
                 }
 
-                _this.trigger('unhandledMessage', data);
+                __this.trigger('unhandledMessage', data);
             });
 
 
             client.on('reconnecting', function (opts) {
 
-                _this.trigger('connectionRetry', opts);
+                __this.trigger('connectionRetry', opts);
 
             });
 
 
             client.on('close', function (e) {
 
-                _this.trigger('disconnect', client, e);
-                _this.trigger('connectionLost');
+                __this.trigger('disconnect', client, e);
+                __this.trigger('connectionLost');
             });
 
             client.on('error', function (e) {
 
-                _this.trigger('error', e);
+                __this.trigger('error', e);
             });
 
+            client.on('stateChange', function (s) {
 
+                __this.trigger('stateChange', s);
+            });
         }
 
         //#region ==[ Events bindings ]===================

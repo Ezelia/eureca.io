@@ -2,7 +2,7 @@
 declare var exports: any;
 
 /** @ignore */
-declare var Proxy: any;
+//declare var Proxy: any;
 
 
 /** @ignore */

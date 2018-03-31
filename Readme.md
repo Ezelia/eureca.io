@@ -1,18 +1,21 @@
 eureca.io
 =========
 
-eureca (Easy Unobstructive REmote CAll) is a node.js bidirectional RPC library using [Primus.io](https://github.com/primus/primus) as a network layer.
+eureca (Easy Unobstructive REmote CAll) is a node.js bidirectional RPC library which can Websockets or WebRTC as transport layers.
+It allow you to call server side function from a browser or nodejs client and vice-versa.
 
-it allow you to call server side function from a browser or nodejs client and vice-versa.
+ * WebRTC support is based on [node-webrtc](https://github.com/js-platform/node-webrtc).
+
+ * Websockets support is based on [Primus.io](https://github.com/primus/primus) making it possible to delegate the websocket part to any supported library by primus, including : engine.io, sockjs, faye, ws and uws.
+
 
 please visit the project web page for more code samples http://eureca.io/
 
-WebRTC support was added in version 0.6.4 : it's based on nodejs WebRTC stack [node-webrtc](https://github.com/js-platform/node-webrtc).
 
 
 Documentation
 =============
-The [documentation](http://eureca.io/doc/) work is in progress.
+The [documentation](http://eureca.io/doc/).
 
 
 Setup 

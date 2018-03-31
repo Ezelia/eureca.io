@@ -1,7 +1,7 @@
 ﻿var express = require('express')
   , app = express(app)
   , server = require('http').createServer(app);
-var Eureca = require('../../');
+var Eureca = require('../');
 
 var transportName = 'engine.io';
 
@@ -45,37 +45,43 @@ var tests = [];
 
 
 describe("Server side", function () {
-    it("should detect client connection", function () {
-        var flag, id, client;
-        runs(function () {            
+    it("should detect client connection", function (done) {
+		
+		
+        var flag, client;
+                
             tests.push(1);
             flag = false;
             client = new Eureca.Client({ transport: transportName, autoConnect: true, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
             eurecaServer.onConnect(function (conn) {
                 flag = true;
-                id = conn.id;                
+                              
+				
+				tests.pop();            
+				console.log('conn Id = ', conn.id);
+				expect(conn.id).not.toBe(undefined);
+				client.disconnect();
+				done();
             });
-        });
-        waitsFor(function () {
-            return flag;
-        }, "The Value should be incremented", 1000);
-        runs(function () {
-            tests.pop();            
-            console.log('conn Id = ', id);
-            expect(id).not.toBe(undefined);
-            client.disconnect();
-        });
+		
+		
     });
     
-    it("should detect client called function", function () {
+    it("should detect client called function", function (done) {
         var flag, id;
-        runs(function () {
+        
             tests.push(1);
             flag = false;
             eurecaServer.exports.foo.onCall = function (conn) {
                 console.log('Client %s called foo()', conn.id);
                 flag = true;
                 id = conn.id;
+				
+				
+				tests.pop();
+				console.log('conn Id = ', id);
+				expect(id).not.toBe(undefined);
+				done();
             }
             var client2 = new Eureca.Client({ transport: transportName, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
             client2.ready(function (proxy) {
@@ -84,19 +90,11 @@ describe("Server side", function () {
                 });
             });
 
-        });
-        waitsFor(function () {
-            return flag;
-        }, "The Value should be incremented", 1000);
-        runs(function () {
-            tests.pop();
-            console.log('conn Id = ', id);
-            expect(id).not.toBe(undefined);
-        });
+
     });
-    it("should get remoteAddress", function () {
+    it("should get remoteAddress", function (done) {
         var flag, ip;
-        runs(function () {
+        
             tests.push(1);
             flag = false;
             eurecaServer.exports.foo2 = function () {
@@ -106,6 +104,12 @@ describe("Server side", function () {
                 
                 console.log('Eureca Object = ', conn.eureca);
                 ip = conn.eureca.remoteAddress;
+				
+				tests.pop();
+				console.log('Client IP = ', ip);
+				expect(ip).not.toBe(undefined);
+
+				done();
             }
 
             var client2 = new Eureca.Client({ transport: transportName, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
@@ -115,43 +119,32 @@ describe("Server side", function () {
                 });
             });
 
-        });
-        waitsFor(function () {
-            return flag;
-        }, "The Value should be incremented", 1000);
-        runs(function () {
-            tests.pop();
-            console.log('Client IP = ', ip);
-            expect(ip).not.toBe(undefined);
-        });
+
     });
 });
 
 
 describe("Client -> Server ", function () {
     var client;
-    it("should connect to server", function () {
-        runs(function () {
+    it("should connect to server", function (done) {
+        
             tests.push(1);
             client = new Eureca.Client({ transport: transportName, autoConnect: false, uri: 'http://localhost:8000/', prefix: 'eureca.io', retry: 3 });
             client.connect();
             client.ready(function (proxy) {
                 ready = true;
                 clientProxy = proxy
+				
+				tests.pop();
+				expect(clientProxy).not.toBe(undefined);	
+				done();			
             });
-        });
-        waitsFor(function () {
-            return ready;
-        }, "The Value should be incremented", 1000);
-        runs(function () {
-            tests.pop();
-            expect(clientProxy).not.toBe(undefined);
-        });
+
     });
 
-    it("should call remote function", function () {
+    it("should call remote function", function (done) {
         var value, flag;
-        runs(function () {
+        
             tests.push(1);
             flag = false;
             value = '#####';
@@ -160,21 +153,18 @@ describe("Client -> Server ", function () {
                     flag = true;
                     value = r;
                     console.log('R = ', r);
+					
+					tests.pop();
+					expect(value).toBe(undefined);		
+					done();					
                 });
             });
-        });
-        waitsFor(function () {
-            return ready && flag;
-        }, "The Value should be incremented", 1000);
-        runs(function () {
-            tests.pop();
-            expect(value).toBe(undefined);
-        });
+
     });
     
-    it("should trigger onMessage", function () {
+    it("should trigger onMessage", function (done) {
         var value, flag;
-        runs(function () {
+        
             tests.push(1);
             flag = false;
             value = '';
@@ -183,22 +173,19 @@ describe("Client -> Server ", function () {
                     console.log(' MSG = ', msg);
                     value = msg;
                     flag = true;
+					
+					tests.pop();
+					expect(value).not.toBe('');		
+					done();					
                 });
                 clientProxy.foo();
             });
-        });
-        waitsFor(function () {
-            return ready && flag;
-        }, "The Value should be incremented", 1000);
-        runs(function () {
-            tests.pop();
-            expect(value).not.toBe('');
-        });
+
     });
     
-    it("should call remote function and get back result", function () {
+    it("should call remote function and get back result", function (done) {
         var value, flag;
-        runs(function () {
+        
             tests.push(1);
             flag = false;
             value = '';
@@ -207,22 +194,19 @@ describe("Client -> Server ", function () {
                     flag = true;
                     value = r;
                     console.log('R = ', r);
+					
+					tests.pop();
+					expect(value).toBe('bar');      
+					done(); 					
                 });
             });
-        });
-        waitsFor(function() {
-            return ready && flag;
-        }, "The Value should be incremented", 1000);
-        runs(function () {
-            tests.pop();
-            expect(value).toBe('bar');            
-        });
+
     });
 
     
-    it("should close connection", function () {
+    it("should close connection", function (done) {
         var disconnected;
-        runs(function () {
+        
             disconnected = false;
             whenClientReady(function () {
                 var itv = setInterval(function () {
@@ -232,13 +216,17 @@ describe("Client -> Server ", function () {
                         
                         disconnected = true;
 
-
+						
+						
                         console.log('server received disconnect message ... closing process in 1sec');
                         server.close();
-
+						
                         setTimeout(function () {
                             process.exit();
                         }, 1000);
+						
+						done();
+						expect(disconnected).toBe(true);  
                     });
 
 
@@ -247,13 +235,7 @@ describe("Client -> Server ", function () {
 
                 }, 100);
             });
-        });
-        waitsFor(function () {
-            return disconnected;
-        }, "The Value should be incremented", 1000);
-        runs(function () {
-            expect(disconnected).toBe(true);            
-        });
+
     });
 });
 
