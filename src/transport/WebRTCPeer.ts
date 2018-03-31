@@ -59,8 +59,9 @@ module Eureca.Transports.WebRTC {
 
         public cfg = {
             "iceServers": [
-                { "url": "stun:stun.l.google.com:19302" },
-                { url: 'stun:stun1.l.google.com:19302' }]
+                { "urls": "stun:stun.l.google.com:19302" },
+                { "urls": 'stun:stun1.l.google.com:19302' }
+            ]
         };
         //public con = { 'optional': [{ 'DtlsSrtpKeyAgreement': true }] };
         public con;
@@ -161,7 +162,7 @@ module Eureca.Transports.WebRTC {
 
         public getOffer(pastedOffer, callback) {
             var data = JSON.parse(pastedOffer);
-            this.offer = new SessionDescription(data);
+            
 
             var pc = new PeerConnection(/*this.pcSettings*/this.cfg, this.con);
             this.pc = pc;
@@ -184,7 +185,8 @@ module Eureca.Transports.WebRTC {
                     if (typeof callback == 'function') callback(pc.localDescription);
                 }
             }
-		  
+
+            this.offer = new SessionDescription(data);
             this.doHandleDataChannels();
         }
 

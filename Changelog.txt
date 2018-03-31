@@ -1,4 +1,7 @@
-﻿v 0.8.0
+﻿v 0.8.1
+ fixed for WebRTC stun configuration
+
+v 0.8.0
  Async calls now use true ES6 Promises (then() replace OnReady() method)
  fixed custom serialization/deserialization methods for data transfers
  WebRTC transport is now supported on all x64 platforms thanks to node-webrtc (Linux, MacOSX and Windows)

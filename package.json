@@ -1,7 +1,7 @@
 {
   "name": "eureca.io",
   "description": "Nodejs transparent bidirectional remote procedure call (RPC) supporting multiple transports : WebRTC, Websocket, engine.io, faye ...etc",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "author": {
     "name": "Alaa-eddine KADDOURI"
   },
@@ -30,7 +30,8 @@
     "url": "https://github.com/Ezelia/eureca.io"
   },
   "dependencies": {
-    "primus": "^7.1.1"
+    "primus": "^7.1.1",
+    "wrtc": "^0.1.0"
   },
   "engines": {
     "node": ">=4.0.0"
