@@ -22,7 +22,7 @@ var fs = require('fs');
 //var EProxy = require('./EurecaProxy.class.js').Eureca.EurecaProxy;
 //var io = require('engine.io');
 var util = require('util');
-
+var http = require('http');
 
 var host = '';
 function getUrl(req) {
@@ -548,10 +548,36 @@ module Eureca  {
          */
         public attach (appServer:any) {
             var __this = this;
-            var app = appServer;
-            if (appServer._events && appServer._events.request !== undefined && appServer.routes === undefined && appServer._events.request.on) app = appServer._events.request;
+            var app = undefined;
+
+            //is standard http server ?
+            if (appServer instanceof http.Server)
+                app = appServer
+
+
+            //is it express application ?
+            if (app === undefined && appServer._events && appServer._events.request !== undefined && appServer.routes === undefined && appServer._events.request.on)
+                app = appServer._events.request;
+
+            //not standard http server nor express app ==> try to guess http.Server instance
+            if (app === undefined)
+            {
+                var keys = Object.getOwnPropertyNames(appServer);            
+                for (let k of keys)
+                {
+                    if (appServer[k] instanceof http.Server)
+                    {
+                        //got it !
+                        app = appServer[k];
+                        break;
+                    }
+                }                
+            }            
+            
+            
             //this._checkHarmonyProxies();
             appServer.eurecaServer = this;
+
 
             this.allowedF = this.settings.allow || [];
             var _prefix = this.settings.prefix || 'eureca.io';
