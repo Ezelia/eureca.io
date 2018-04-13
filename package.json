@@ -30,8 +30,7 @@
     "url": "https://github.com/Ezelia/eureca.io"
   },
   "dependencies": {
-    "primus": "^7.1.1",
-    "wrtc": "^0.1.0"
+    "primus": "^7.1.1"
   },
   "engines": {
     "node": ">=4.0.0"
