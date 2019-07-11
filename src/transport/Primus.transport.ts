@@ -155,6 +155,15 @@ module Eureca.Transports.PrimusTransport {
             //var primusOptions: any = {};
             options.pathname = options.prefix ? '/' + options.prefix : undefined;
             var primus = new Primus(hook, options);
+
+// // sync middleware
+// primus.use('eureca', function (req, res) {
+//     console.log('EURECA middleware in action');
+    
+//     req.tag='eureca.io';
+//     console.log('>> req.tag=',req.tag);
+//     console.log('>> req=',req.headers.cookie);
+// });                
             //primus.save(__dirname + '/js/primus.js');
             var primusTransport = Transport.get('primus');
             //populate the client script

@@ -31,4 +31,4 @@ exports.EurecaClient = (function () {
     }
 })();
 
-console.log('eureca.io v0.8.0');
+console.log('eureca.io v0.8.1');

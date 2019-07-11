@@ -213,7 +213,7 @@ module Eureca {
          * @param {any} rawData - data to send (must be serializable type)
          */
         public send(rawData:any) {
-            return this.socket.send(rawData);
+            return this.socket.send(this.serialize(rawData));
         }
 
 
@@ -251,7 +251,7 @@ module Eureca {
 
             var authRequest = {};
             authRequest[Eureca.Protocol.authReq] = args;
-            this.socket.send(authRequest);
+            this.socket.send(this.serialize(authRequest));
         }
 
 
@@ -319,7 +319,7 @@ module Eureca {
         private _handleClient(client, proxy) {
             const __this = this;
 
-            client.on('open', function () {
+            client.on('open', function () {                
                 __this.trigger('connect', client);
                 __this.tries = 0;
             });

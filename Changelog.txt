@@ -3,6 +3,9 @@
 
 v 0.8.1
  fixed for WebRTC stun configuration
+ fixed Authentication mode for WebRTC
+ fixed Express v4 compatibility
+
 
 v 0.8.0
  Async calls now use true ES6 Promises (then() replace OnReady() method)
