@@ -171,7 +171,7 @@ module Eureca.Transports.PrimusTransport {
             var server = new Server(primus);
 
             if (options.cookies)
-                primus.use('cookies', options.cookieParser);
+                primus.use('cookies', options.cookies);
             
             if (options.session)
                 primus.use('session', options.session);
