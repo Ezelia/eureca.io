@@ -48,6 +48,8 @@ module Eureca  {
          * @property {function} [settings.authenticate] - If this function is defined, the client will not be able to invoke server functions until it successfully call the client side authenticate method, which will invoke this function.
          * @property {function} [settings.serialize] - If defined, this function is used to serialize the request object before sending it to the client (default is JSON.stringify). This function can be useful to add custom information/meta-data to the transmitted request.
          * @property {function} [settings.deserialize] - If defined, this function is used to deserialize the received response string.
+         * @property {function} [settings.cookieParser] - If defined, middleweare will be used to parse cookies (to use with express cookieParser).
+         * @property {function} [settings.session] - If defined, middleweare will be used handle sessions (to use with express-session).
 
          * @example
          * <h4> # default instantiation</h4>
@@ -246,6 +248,7 @@ module Eureca  {
 
         private sendScript(request, response, prefix) {
             if (this.scriptCache != '') {
+                //FIXME : don't cache _eureca_host, it can lead to inconsistencies (for example if you first load the page from localhost then from external IP, the localhost will be cached)
                 response.writeHead(200);
                 response.write(this.scriptCache);
                 response.end();

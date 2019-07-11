@@ -1,4 +1,7 @@
-﻿v 0.8.1
+﻿v 0.8.2
+ Add "cookieParser" and "session" parameters in server initialization options
+
+v 0.8.1
  fixed for WebRTC stun configuration
 
 v 0.8.0
