@@ -543,10 +543,12 @@ module Eureca  {
             var _clientUrl = this.settings.clientScript || '/eureca.js';
             var _transformer = this.settings.transformer;
             var _parser = this.settings.parser;
+            var session = this.settings.session;
+            var cookieParser = this.settings.cookieParser;
 
             //initialising server
             //var ioServer = io.attach(server, { path: '/'+_prefix });
-            this.ioServer = this.transport.createServer(appServer, { prefix: _prefix, transformer:_transformer, parser:_parser });
+            this.ioServer = this.transport.createServer(appServer, { prefix: _prefix, transformer:_transformer, parser:_parser, session, cookieParser });
             //console.log('Primus ? ', ioServer.primus);
 
             //var scriptLib = (typeof ioServer.primus == 'function') ? ioServer.primus.library() : null;
