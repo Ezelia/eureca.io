@@ -1,11 +1,7 @@
-/// <reference path="ISocket.interface.ts" />
+import { ISocket } from "./ISocket.interface";
 
-/** @ignore */
-module Eureca {
 
-    export interface IServer {
-        // Instance member
-        onconnect(callback: (ISocket) => void );
-    }
-
+export interface IServer {
+    // Instance member
+    onconnect(callback: (socket:ISocket) => void);
 }

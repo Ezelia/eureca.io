@@ -1,7 +1,7 @@
 {
   "name": "eureca.io",
   "description": "Nodejs transparent bidirectional remote procedure call (RPC) supporting multiple transports : WebRTC, Websocket, engine.io, faye ...etc",
-  "version": "0.8.2",
+  "version": "0.9.0",
   "author": {
     "name": "Alaa-eddine KADDOURI"
   },
@@ -23,26 +23,35 @@
     "node",
     "board"
   ],
+  "main": "index.js",
   "license": "MIT",
   "homepage": "http://eureca.io/",
   "repository": {
     "type": "git",
     "url": "https://github.com/Ezelia/eureca.io"
   },
-  "dependencies": {
-    "primus": "^7.1.1"
-  },
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=8.0.0"
   },
-  "main": "index.js",
+  "scripts": {
+    "clean": "rimraf dist/*",
+    "build": "rollup -c",
+    "test": "jasmine --reporter=jasmine-console-reporter"
+  },
+  "dependencies": {
+    "primus": "^7.3.4"
+  },
   "devDependencies": {
-    "express": "^4.16.2",
-    "gulp": "^4.0.0",
-    "gulp-sourcemaps": "^2.6.4",
-    "gulp-typescript": "^3.2.3",
-    "jasmine": "^3.1.0",
-    "jasmine-console-reporter": "^2.0.1",
-    "typescript": "^2.6.2"
+    "@types/node": "^14.0.13",
+    "engine.io": "^3.4.2",
+    "engine.io-client": "^3.4.3",
+    "express": "^4.17.1",
+    "jasmine": "^3.5.0",
+    "jasmine-console-reporter": "^3.1.0",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.16.1",
+    "rollup-plugin-dts": "^1.4.7",
+    "rollup-plugin-typescript2": "^0.27.1",
+    "typescript": "^3.9.5"
   }
 }

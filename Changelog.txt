@@ -1,4 +1,13 @@
-﻿v 0.8.2
+﻿v 0.9.0
+ Add : introducing new way to export methods from server and client side using an explicit export()
+ Major refactoring of the whole repo to comply with TS and ES6 good practices
+ Removed onMessage, onConnect
+ replaced this.connection by this.socket
+ WebRTC support is now stable
+ Moved to rollup build system
+
+
+v 0.8.2
  Add "cookieParser" and "session" parameters in server initialization options
 
 v 0.8.1

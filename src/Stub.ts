@@ -1,303 +1,168 @@
-/// <reference path="Protocol.config.ts" />
 
-/// <reference path="Util.class.ts" />
-/// <reference path="eurecapromise.ts" />
-
-
+import { EurecaPromise } from "./EurecaPromise";
+import { Util } from "./Util.class";
+import { Protocol } from "./Protocol.static";
+import { InvokeContext } from "./InvokeContext.class";
+import { ISocket } from "./ISocket.interface";
 
 /** @ignore */
-module Eureca {
-
-    // Class
-    export class Stub {
-
-        private static callbacks: any = {};
-        private serialize:Function;
-        private deserialize:Function;
-        // Constructor
-        constructor(public settings: any = {}) {
-            //this.callbacks = {};
-            this.serialize = settings.serialize;
-            this.deserialize = settings.deserialize;
-        }
-
-        static registerCallBack(sig, cb) {
-            this.callbacks[sig] = cb;
-        }
-
-        static doCallBack(sig, result, error) {
-            if (!sig) return;
-            var proxyObj = this.callbacks[sig];
-            delete this.callbacks[sig];
-
-            if (proxyObj !== undefined) {
-                proxyObj.status = 1;
-                //proxyObj.result = result;
-                //proxyObj.error = error;
-
-                if (error == null)
-                    proxyObj.resolve(result);
-                else
-                    proxyObj.reject(error);
-            }
-        }
-
-
-        //invoke remote function by creating a proxyObject and sending function name and arguments to the remote side
-        public invokeRemoteOld(context, fname, socket, ...args) {
-            
-            var proxyObj = {
-                status: 0,
-                result: null,
-                error: null,
-                sig: null,
-                callback: function () { },
-                errorCallback: function () { },
-                //TODO : use the standardized promise syntax instead of onReady
-                then: function (fn, errorFn) {
-                    if (this.status != 0) {
-
-                        if (this.error == null)
-                            fn(this.result);
-                        else
-                            errorFn(this.error);
-
-                        return;
-                    }
-
-                    if (typeof fn == 'function') {
-                        this.callback = fn;
-                    }
-
-                    if (typeof errorFn == 'function') {
-                        this.errorCallback = errorFn;
-                    }
-
-                }
-            }
-            //onReady retro-compatibility with older eureca.io versions
-            proxyObj['onReady'] = proxyObj.then;
-
-            var RMIObj: any = {};
-
-
-            var argsArray = args;//Array.prototype.slice.call(arguments, 0);
-            var uid = Eureca.Util.randomStr();
-            proxyObj.sig = uid;
-
-
-            Stub.registerCallBack(uid, proxyObj);
-
-
-
-            RMIObj[Protocol.functionId] = /*this.settings.useIndexes ? idx : */fname;
-            RMIObj[Protocol.signatureId] = uid;
-            if (argsArray.length > 0) RMIObj[Protocol.argsId] = argsArray;
-
-
-            
-            socket.send(this.settings.serialize.call(context, RMIObj));
-
-            
-            return proxyObj;
-        }
-
-        public invokeRemote(context, fname, socket, ...args) {
-            
-            let resolveCB: any;
-            let rejectCB: any;
-            var proxyObj = new EurecaPromise((resolve, reject) => {
-                resolveCB = resolve;
-                rejectCB = reject;
-            });
-
-            proxyObj.resolve = resolveCB;
-            proxyObj.reject = rejectCB;
-
-            var RMIObj: any = {};
-
-
-            var argsArray = args;//Array.prototype.slice.call(arguments, 0);
-            var uid = Eureca.Util.randomStr();
-            proxyObj.sig = uid;
-
-
-            Stub.registerCallBack(uid, proxyObj);
-
-
-
-            RMIObj[Protocol.functionId] = /*this.settings.useIndexes ? idx : */fname;
-            RMIObj[Protocol.signatureId] = uid;
-            if (argsArray.length > 0) RMIObj[Protocol.argsId] = argsArray;
-
-
-
-            socket.send(this.settings.serialize.call(context, RMIObj));
-
-
-            return proxyObj;
-        }
-        /**
-         * Generate proxy functions allowing to call remote functions
-         */
-        public importRemoteFunction(handle, socket, functions/*, serialize=null*/) {
-            
-
-            var _this = this;
-            if (functions === undefined) return;
-            for (var i = 0; i < functions.length; i++) {
-                (function (idx, fname) {
-                    var proxy = handle;
-                    /* namespace parsing */
-                    var ftokens = fname.split('.');
-                    for (var i = 0; i < ftokens.length - 1; i++) {
-                        proxy[ftokens[i]] = proxy[ftokens[i]] || {};
-                        proxy = proxy[ftokens[i]];
-                    }
-                    var _fname = ftokens[ftokens.length - 1];
-                    /* end namespace parsing */
-
-                    //TODO : do we need to re generate proxy function if it's already declared ?
-                    proxy[_fname] = function (...args) {
-                        
-                        args.unshift(socket);
-                        args.unshift(fname);
-                        args.unshift(proxy[_fname]);
-                        return _this.invokeRemote.apply(_this, args);
-                        
-                        /*
-                        var proxyObj = {
-                            status: 0,
-                            result: null,
-                            error: null,
-                            sig:null,
-                            callback: function () { },
-                            errorCallback: function () { },                            
-                            //TODO : use the standardized promise syntax instead of onReady
-                            then: function (fn, errorFn) {
-                                if (this.status != 0) {
-
-                                    if (this.error == null)
-                                        fn(this.result);
-                                    else
-                                        errorFn(this.error);
-
-                                    return;
-                                }
-
-                                if (typeof fn == 'function') {
-                                    this.callback = fn;
-                                }
-
-                                if (typeof errorFn == 'function') {
-                                    this.errorCallback = errorFn;
-                                }
-
-                            }
-                        }
-                        //onReady retro-compatibility with older eureca.io versions
-                        proxyObj['onReady'] = proxyObj.then;
-
-                        var RMIObj: any = {};
-
-                        
-                        var argsArray = args;//Array.prototype.slice.call(arguments, 0);
-                        var uid = Eureca.Util.randomStr();
-                        proxyObj.sig = uid;
-
-
-                        Stub.registerCallBack(uid, proxyObj);
-
-
-
-                        RMIObj[Protocol.functionId] = _this.settings.useIndexes ? idx : fname;
-                        RMIObj[Protocol.signatureId] = uid;
-                        if (argsArray.length > 0) RMIObj[Protocol.argsId] = argsArray;
-
-                        //Experimental custom context sharing
-                        //allow sharing global context (set in serverProxy/clientProxy) or local proxy set in the caller object
-                        //if (proxy[_fname].context || handle.context) RMIObj[Protocol.context] = proxy[_fname].context || handle.context;
-
-                        //socket.send(JSON.stringify(RMIObj));
-                        socket.send(_this.settings.serialize.call(proxyObj, RMIObj));
-
-                        return proxyObj;
-                        */
-                        
-                    }
-                })(i, functions[i]);
-            }
-
-        }
-
-
-        private sendResult(socket, sig, result, error) {
-            if (!socket) return;
-            var retObj = {};
-            retObj[Protocol.signatureId] = sig;
-            retObj[Protocol.resultId] = result;
-            retObj[Protocol.errorId] = error;
-            socket.send(this.serialize(retObj));
-        }
-
-
-        //invoke exported function and send back the result to the invoker
-        public invoke(context, handle, obj, socket?) {
-
-
-            var fId = parseInt(obj[Protocol.functionId]);
-            var fname = isNaN(fId) ? obj[Protocol.functionId] : handle.contract[fId];
-
-            /* browing namespace */
-            var ftokens = fname.split('.');
-            var func = handle.exports;
-            for (var i = 0; i < ftokens.length; i++) {
-                if (!func) {
-                    console.log('Invoke error', obj[Protocol.functionId] + ' is not a function', '');
-                    this.sendResult(socket, obj[Protocol.signatureId], null, 'Invoke error : ' + obj[Protocol.functionId] + ' is not a function');
-                    return;
-                }
-                func = func[ftokens[i]];
-            }
-            /* ***************** */
-
-
-            //var func = this.exports[fname];
-            if (typeof func != 'function') {
-                //socket.send('Invoke error');
-                console.log('Invoke error', obj[Protocol.functionId] + ' is not a function', '');
-                this.sendResult(socket, obj[Protocol.signatureId], null, 'Invoke error : ' + obj[Protocol.functionId] + ' is not a function');
-                return;
-            }
-            //obj.a.push(conn); //add connection object to arguments
-
-
-
-            try {
-                obj[Protocol.argsId] = obj[Protocol.argsId] || [];
-                var result = func.apply(context, obj[Protocol.argsId]);
-
-                //console.log('sending back result ', result, obj)
-
-                if (socket && obj[Protocol.signatureId] && !context.async) {
-
-                    this.sendResult(socket, obj[Protocol.signatureId], result, null);
-                    /*
-                    var retObj = {};
-                    retObj[Protocol.signatureId] = obj[Protocol.signatureId];
-                    retObj[Protocol.resultId] = result;
-                    socket.send(JSON.stringify(retObj));
-                    */
-
-                }
-
-                obj[Protocol.argsId].unshift(socket);
-                if (typeof func.onCall == 'function') func.onCall.apply(context, obj[Protocol.argsId]);
-            } catch (ex) {
-                console.log('EURECA Invoke exception!! ', ex.stack);
-            }
-
+export class Stub {
+
+    private static callbacks: any = {};
+    // Constructor
+    constructor(public settings: any = {}) {
+    }
+
+    static registerCallBack(sig, cb) {
+        this.callbacks[sig] = cb;
+    }
+
+    static doCallBack(sig, result, error, socket?: ISocket) {
+        if (!sig) return;
+        var proxyObj = this.callbacks[sig];
+        delete this.callbacks[sig];
+
+        if (proxyObj !== undefined) {
+            proxyObj.status = 1;
+            //proxyObj.result = result;
+            //proxyObj.error = error;
+
+            if (error == null)
+                proxyObj.resolve(result);
+            else
+                proxyObj.reject(socket ? `clientId<${socket.id}> : ${error}` : error);
         }
     }
 
+
+    public invokeRemote(fname: string, importName: string, socket: ISocket, ...args) {
+
+        let defResolve: any;
+        let defReject: any;
+        const RPCPromise = new EurecaPromise((resolve, reject) => {
+            //save our resolve/reject to external variables
+            defResolve = resolve;
+            defReject = reject;
+        });
+        //save the defered resolve/reject to RPCPromise object 
+        //in order to be able to resolve the promise outside the present context
+        RPCPromise.resolve = defResolve;
+        RPCPromise.reject = defReject;
+        RPCPromise.sig = `${Util.randomID()}`;
+        Stub.registerCallBack(RPCPromise.sig, RPCPromise);
+
+        //create the RPC object
+        const RPCObject: any = {};
+        RPCObject[Protocol.functionId] = fname;
+        RPCObject[Protocol.signatureId] = RPCPromise.sig;
+        if (importName) RPCObject[Protocol.contractObjId] = importName;
+        if (args.length > 0) RPCObject[Protocol.argsId] = args;
+
+        socket.send(this.settings.serialize(RPCObject));
+        return RPCPromise;
+    }
+
+
+    /**
+     * Generate proxy functions allowing to call remote functions
+     */
+    public importRemoteFunction(socket: ISocket, functions, importName: string, filterRx?: RegExp) {
+        if (!socket.proxy) socket.proxy = {};
+        if (functions === undefined) return;
+        if (!Array.isArray(functions)) return;
+
+        for (let fname of functions) {
+            if (filterRx && !filterRx.test(fname)) continue;
+
+            let proxy = socket.proxy;
+
+            if (importName && importName !== '__default__') {
+                proxy[importName] = proxy[importName] || {};
+                proxy = proxy[importName];
+            }
+
+            /* namespace parsing */
+            let ftokens = fname.split('.');
+            for (let i = 0; i < ftokens.length - 1; i++) {
+                const nsToken = ftokens[i];
+                proxy[nsToken] = proxy[nsToken] || {};
+                proxy = proxy[nsToken];
+            }
+            const _fname = ftokens[ftokens.length - 1];
+            /* end namespace parsing */
+
+            //FIXME : do we need to re generate proxy function if it's already declared ?
+            proxy[_fname] = (...args) => {
+                return this.invokeRemote(fname, importName, socket, ...args);
+            }
+        }
+
+    }
+
+
+
+    //invoke exported function and send back the result to the invoker
+    public invokeLocal(invokeContext: InvokeContext, handle) {
+        const obj = invokeContext.message;
+
+        const fId = parseInt(obj[Protocol.functionId]);
+        const fname = isNaN(fId) ? obj[Protocol.functionId] : handle.contract[fId];
+
+        /* browing namespace */
+        const ftokens = fname.split('.');
+        let func = handle.exports;
+        for (let i = 0; i < ftokens.length; i++) {
+            if (!func) {
+                console.warn('Invoke error', obj[Protocol.functionId] + ' is not a function', '');
+                invokeContext.sendResult(null, 'Invoke error : function ' + obj[Protocol.functionId] + ' not implemented', 501);
+                return;
+            }
+            func = func[ftokens[i]];
+        }
+        /* ***************** */
+
+
+        //var func = this.exports[fname];
+        if (typeof func != 'function') {
+            //socket.send('Invoke error');
+            console.log('Invoke error', obj[Protocol.functionId] + ' is not a function', '');
+            invokeContext.sendResult(null, 'Invoke error : function ' + obj[Protocol.functionId] + ' not implemented', 501);
+            return;
+        }
+        //obj.a.push(conn); //add connection object to arguments
+
+
+
+        try {
+            obj[Protocol.argsId] = obj[Protocol.argsId] || [];
+            const callCtx = handle.context || invokeContext;
+            const result = func.apply(callCtx, obj[Protocol.argsId]);
+
+            //Handle promises
+            if (result instanceof Promise) {
+                result
+                    .then(result => invokeContext.sendResult(result, null, 200))
+                    .catch(err => invokeContext.sendResult(null, err, 500));
+
+                return;
+            }
+            //console.log('sending back result ', result, obj)
+
+            if (obj[Protocol.signatureId] && !invokeContext.async) {
+
+                invokeContext.sendResult(result, null, 200);
+
+            }
+
+            obj[Protocol.argsId].unshift(invokeContext.socket);
+            if (typeof func.onCall == 'function')
+                func.onCall.apply(invokeContext, obj[Protocol.argsId]);
+
+        } catch (ex) {
+            console.log('EURECA Invoke exception!! ', ex.stack);
+        }
+
+    }
 }
+
+

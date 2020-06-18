@@ -1,10 +1,12 @@
-exports.Client = require('./lib/EurecaClient.js').Eureca.Client;
-exports.Server = require('./lib/EurecaServer.js').Eureca.Server;
-exports.Transport = require('./lib/EurecaServer.js').Eureca.Transport;
-exports.Protocol = require('./lib/EurecaServer.js').Eureca.Protocol;
+Eureca = require('./dist/EurecaServer.js');
+exports.Client = Eureca.Client;
+exports.Protocol = Eureca.Protocol;
+exports.Server = Eureca.Server;
+exports.Transport = Eureca.Transport;
+exports.version = Eureca.version;
 
 exports.EurecaServer = (function () {
-    
+
 
     function F(args) {
         return exports.Server.apply(this, args);
@@ -12,13 +14,13 @@ exports.EurecaServer = (function () {
     F.prototype = exports.Server.prototype;
 
     return function () {
-        console.log("/!\\  EurecaServer syntax is deprecated please see http://eureca.io/doc/tutorial-A00-Deprecations.html");
+        console.warn("/!\\  EurecaServer syntax is deprecated please see http://eureca.io/doc/tutorial-A00-Deprecations.html");
         return new F(arguments);
     }
 })();
 
 exports.EurecaClient = (function () {
-    
+
 
     function F(args) {
         return exports.Client.apply(this, args);
@@ -26,9 +28,7 @@ exports.EurecaClient = (function () {
     F.prototype = exports.Client.prototype;
 
     return function () {
-        console.log("/!\\  EurecaClient syntax is deprecated please see http://eureca.io/doc/tutorial-A00-Deprecations.html");
+        console.warn("/!\\  EurecaClient syntax is deprecated please see http://eureca.io/doc/tutorial-A00-Deprecations.html");
         return new F(arguments);
     }
 })();
-
-console.log('eureca.io v0.8.1');

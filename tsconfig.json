@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "outDir": "./build",
+    "module": "ES6",
+    "traceResolution": false /* Report module resolution log messages. */,
+    "listFiles": true /* Print names of files part of the compilation. */,
+    "skipLibCheck": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "src/types"
+    ],
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}

@@ -1,21 +1,30 @@
-/** @ignore */
-declare var exports: any;
-
-/** @ignore */
-module Eureca {
-
-    // Class
-    export class Util {
-        static isNodejs = (typeof exports == 'object' && exports);
-        //Borrowed from RMI.js https://github.com/mmarcon/rmi.js
-        static randomStr(length:number = 10) {
-            let text = '';
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            for(let i = 0; i < length; i++) {
-                text += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return text;
-        }
+/**@ignore */
+export class Util {
+    static isNodejs = (typeof process !== 'undefined' && process.versions && process.versions.node);
+    static randomID() {
+        return Date.now().toString(36) + Math.random().toString(36);
+    }
+    static getUrl(req) {
+        var scheme = req.headers.referer !== undefined ? req.headers.referer.split(':')[0] : 'http';
+        return scheme + '://' + req.headers.host;
     }
 
+    static str2RegExp(input: string) {
+        let regExp: RegExp;
+
+        let rxText = input.trim();
+
+        let match = rxText.match(new RegExp('^/(.*?)/([gimy]*)$'));
+        if (!match || match[1]) rxText = `/${rxText.replace(/\./g, '\.').replace(/\*/g, '.*')}/`;
+
+
+
+        match = rxText.match(new RegExp('^/(.*?)/([gimy]*)$'));
+        if (match) regExp = new RegExp(match[1], match[2]);
+
+        return regExp;
+
+    }
 }
+
+
